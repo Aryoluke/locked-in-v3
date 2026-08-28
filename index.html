@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#101615">
+<title>LOCKED IN V3 — Personal Operating System</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app" class="app-shell">
+<header class="topbar"><a class="brand" href="#dashboard"><span class="brand-mark">✦</span><span>LOCKED <b>IN</b> <i>V3</i></span></a><div class="top-actions"><span id="save-status" class="save-status">LOCAL ONLY</span><button class="icon-btn" data-action="toggle-incognito" aria-label="Toggle incognito">◉</button><button class="icon-btn" data-action="open-settings" aria-label="Settings">⚙</button></div></header>
+<div id="toast" class="toast" role="status"></div>
+<main id="view" class="view"></main>
+<nav class="bottom-nav" aria-label="Primary navigation">
+<button data-route="dashboard" class="nav-item active"><span>⌂</span>Today</button><button data-route="train" class="nav-item"><span>◒</span>Train</button><button data-route="nutrition" class="nav-item"><span>◈</span>Fuel</button><button data-route="mind" class="nav-item"><span>◎</span>Mind</button><button data-route="life" class="nav-item"><span>✧</span>Life</button><button data-route="squad" class="nav-item"><span>♜</span>Squad</button>
+</nav>
+</div>
+<dialog id="onboarding"><form method="dialog" id="onboarding-form"><div class="eyebrow">YOUR OPERATING SYSTEM</div><h1>Lock in, <span class="accent">properly.</span></h1><p class="muted">Your data stays on this device. Personalise your plan in under a minute.</p><div class="form-grid"><label>Name<input name="name" required placeholder="What should we call you?"></label><label>Age<input name="age" type="number" min="13" max="100" placeholder="24"></label><label>Date of birth<input name="dob" type="date"></label><label>Height (cm)<input name="height" type="number" min="100" max="250" placeholder="180"></label><label>Weight (kg)<input name="weight" type="number" min="30" max="300" placeholder="80"></label><label>Body type<select name="bodyType"><option>Athletic</option><option>Lean</option><option>Average</option><option>Stocky</option></select></label><label>Diet<select name="diet"><option>Balanced</option><option>High protein</option><option>Vegetarian</option><option>Vegan</option></select></label><label>Equipment<select name="equipment"><option>Full gym</option><option>Home basics</option><option>Bodyweight</option></select></label></div><div class="check-row"><label><input type="checkbox" name="male" checked> Male-only plan</label><label><input type="checkbox" name="skin"> Track skin</label><label><input type="checkbox" name="sleep"> Track sleep</label></div><label>Primary goals<input name="goals" placeholder="Strength, confidence, study, consistency"></label><button class="btn btn-primary wide" value="save">Create my plan →</button></form></dialog>
+<script src="data.js"></script><script src="app-core.js"></script><script src="app-train.js"></script><script src="app-nutrition.js"></script><script src="app-mind.js"></script><script src="app-life.js"></script><script src="app-squad.js"></script><script src="app-advanced.js"></script>
+</body></html>
