@@ -1,7 +1,1 @@
-(function () {
-  'use strict';
-  var app = window.LockedIn;
-  if (!app) return;
-  app.registerView('nutrition', function () { var meals = app.state().meals; var list = meals.length ? meals.slice(-8).reverse().map(function (meal) { return '<li><strong>' + app.escape(meal.name) + '</strong><span>' + meal.calories + ' kcal · ' + meal.protein + 'g protein</span></li>'; }).join('') : '<li class="muted">Your fuel log is empty.</li>'; return '<section class="hero"><p class="eyebrow">FUEL</p><h1>Nutrition</h1><p class="muted">Record the next meal, not a perfect plan.</p></section><section class="grid-two"><form class="card" data-meal-form><h2>Quick meal log</h2><label>Meal <input name="name" placeholder="Protein oats"></label><label>Calories <input name="calories" type="number" min="0" value="500"></label><label>Protein (g) <input name="protein" type="number" min="0" value="30"></label><button class="btn primary" type="submit">Log meal</button></form><article class="card"><h2>Recent fuel</h2><ul class="activity-list">' + list + '</ul></article></section>'; });
-  document.addEventListener('submit', function (event) { if (!event.target.matches('[data-meal-form]')) return; event.preventDefault(); var form = new FormData(event.target); var state = app.state(); state.meals.push({ name: String(form.get('name') || 'Meal'), calories: Number(form.get('calories') || 0), protein: Number(form.get('protein') || 0), date: new Date().toISOString() }); app.record('meal', { label: 'Meal logged' }); app.toast('Meal logged.'); });
-}());
+/* Nutrition surfaces are implemented by the local-first core. This file remains a stable module boundary. */
