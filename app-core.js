@@ -234,12 +234,10 @@ function action(name){
 }
 function exportState(){
  var text=JSON.stringify(state,null,2);
- var file=new Blob([text],{type:'application/json'});
  var link=document.createElement('a');
- link.href=URL.createObjectURL(file);
+ link.href='data:application/json;charset=utf-8,'+encodeURIComponent(text);
  link.download='locked-in-v3-state.json';
  link.click();
- setTimeout(function(){URL.revokeObjectURL(link.href);},1000);
  toast('Backup exported');
 }
 function importState(){
