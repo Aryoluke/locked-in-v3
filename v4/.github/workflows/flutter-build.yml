@@ -1,0 +1,42 @@
+name: LOCKED IN builds
+on:
+  push:
+    branches: [v4]
+  workflow_dispatch:
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: android
+          - os: windows-latest
+            target: windows
+          - os: ubuntu-latest
+            target: web
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: v4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: flutter analyze
+      - if: matrix.target == 'android'
+        run: flutter build apk --release
+      - if: matrix.target == 'windows'
+        run: flutter config --enable-windows-desktop && flutter build windows --release
+      - if: matrix.target == 'web'
+        run: flutter build web --release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: locked-in-${{ matrix.target }}
+          path: |
+            v4/build/app/outputs/flutter-apk/*.apk
+            v4/build/windows/x64/runner/Release/**
+            v4/build/web/**
+          if-no-files-found: ignore
