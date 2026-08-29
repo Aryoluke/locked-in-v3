@@ -1,29 +1,355 @@
-(function(){'use strict';
-const storageKey='locked-in-v3-state';let store,toastTimer;const views=new Map(),actions=new Map();
-const esc=v=>String(v==null?'':v).split('&').join('&amp;').split('<').join('&lt;').split('>').join('&gt;').split('"').join('&quot;').split("'").join('&#39;');
-const today=()=>new Date().toISOString().slice(0,10),num=(v,d=0)=>Number.isFinite(Number(v))?Number(v):d,uid=p=>(p||'id')+'-'+Date.now()+'-'+Math.random().toString(36).slice(2,7);
-function base(){return {profile:{name:'Operator',age:'',dob:'',height:'',weight:'',bodyType:'',diet:'',equipment:'',goals:''},onboardingComplete:false,route:'dashboard',xp:0,streak:0,water:0,logs:[],meals:[],exercises:[],study:[],mood:[],journal:[],habits:{},feed:[],examDate:'',revisionDates:[],arc:{active:false},sports:['Rugby','Football','Tennis','Swimming','Cricket','Hockey','Athletics','Basketball','Volleyball','Boxing','Cycling','Rowing','Climbing'],customSports:[],goals:[{id:'goal-1',title:'Build consistent momentum',due:'',progress:0}],skincare:[],vault:[],runs:[],glowUp:{fitness:25,style:25,mind:25,life:25,milestones:[]},privacy:{role:'member',visibility:'private',incognito:false},settings:{backgroundSyncChecked:false},squad:null};}
-function revision(exam){if(!exam)return[];const b=new Date(exam+'T12:00:00Z');return [30,14,7,3,1].map(n=>{const d=new Date(b);d.setUTCDate(d.getUTCDate()-n);return {offset:n,date:d.toISOString().slice(0,10),label:'Exam minus '+n+' days'};});}
-function squad(){const names=['Ari','Mina','Jules','Kai','Nia','Sam','Rory','Zee'],pers=['The Sprinter','The Strategist','The Anchor','The Spark','The Finisher','The Builder','The Mentor','The Wildcard'],pat=['early-bird','steady','late-push','weekend-warrior'];const members=names.map((name,i)=>({id:'member-'+i,name,initials:name.slice(0,2).toUpperCase(),personality:pers[i],pattern:pat[i%4],activity:(i*13+37)%100}));const standings=members.map((m,i)=>({name:m.name,points:80-i*6+m.activity%11})).sort((a,b)=>b.points-a.points).map((x,i)=>Object.assign(x,{movement:i<2?'Promoted':i>5?'Relegation zone':'Holding'}));return {members,standings,mvp:standings[0].name,week:today().slice(0,7)};}
-function normalize(x){const s=base(),o=x&&typeof x==='object'?x:{};Object.keys(s).forEach(k=>{if(o[k]!==undefined)s[k]=o[k]});s.profile=Object.assign(base().profile,o.profile||{});s.arc=Object.assign({active:false},o.arc||{});s.arc.active=Boolean(s.arc.active);s.privacy=Object.assign(base().privacy,o.privacy||{});s.glowUp=Object.assign(base().glowUp,o.glowUp||{});s.settings=Object.assign(base().settings,o.settings||{});['logs','meals','exercises','study','mood','journal','skincare','vault','runs','feed','customSports'].forEach(k=>{s[k]=Array.isArray(s[k])?s[k]:[]});s.habits=s.habits&&typeof s.habits==='object'?s.habits:{};s.goals=Array.isArray(s.goals)?s.goals:base().goals;s.examDate=typeof s.examDate==='string'?s.examDate:'';s.revisionDates=revision(s.examDate);s.squad=s.squad&&Array.isArray(s.squad.members)?s.squad:squad();return s;}
-function load(){try{return normalize(JSON.parse(localStorage.getItem(storageKey)||'null'))}catch(e){return base()}}function save(){try{localStorage.setItem(storageKey,JSON.stringify(store));status('Saved locally')}catch(e){status('Local save unavailable')}}function status(t){const n=document.getElementById('save-status');if(n)n.textContent=t}function toast(t){const n=document.getElementById('toast');if(!n)return;n.textContent=t;n.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>n.hidden=true,2200)}
-function feed(label,detail){store.feed.unshift({label,detail:detail||'',date:today()});store.feed=store.feed.slice(0,40)}
-function awardXp(amount,reason){const multiplier=store.arc.active?1.5:1;const points=num(amount)*multiplier;store.xp=Math.max(0,num(store.xp)+points);if(points)feed('+'+points+' XP',reason||'Progress recorded')}
-function record(type,data){const e=Object.assign({id:uid(type),type,date:today(),timestamp:new Date().toISOString()},data||{});store.logs.unshift(e);store.logs=store.logs.slice(0,200);awardXp(10,e.label||type+' logged');return e}
-function link(route,label,cls=''){return '<button type="button" class="nav-link '+cls+'" data-route="'+esc(route)+'">'+esc(label)+'</button>'}function btn(a,t,cls=''){return '<button type="button" class="btn '+cls+'" data-action="'+esc(a)+'">'+esc(t)+'</button>'}function card(t,b){return '<article class="card"><h2>'+esc(t)+'</h2>'+b+'</article>'}function hero(k,t,c){return '<section class="hero"><p class="eyebrow">'+esc(k)+'</p><h1>'+esc(t)+'</h1><p class="muted">'+esc(c)+'</p></section>'}function list(a){return a.length?'<div class="activity-list">'+a.slice(0,8).map(x=>'<div class="activity-row"><strong>'+esc(x.label||x.name||x.type||'Entry')+'</strong><small>'+esc(x.detail||x.date||'')+'</small></div>').join('')+'</div>':'<p class="empty">Nothing logged yet. Choose one small action.</p>'}
-function line(title,values,labels,color='#8eff70'){const rows=values.map((v,i)=>'<tr><th>'+esc(labels[i]||i+1)+'</th><td>'+esc(v)+'</td></tr>').join('');return '<section class="chart-card"><div class="chart-heading"><h3>'+esc(title)+'</h3><span class="legend"><i style="background:'+color+'"></i>'+esc(title)+'</span></div><canvas class="line-chart" height="200" data-values="'+esc(JSON.stringify(values))+'" data-labels="'+esc(JSON.stringify(labels))+'" data-colour="'+color+'" aria-label="'+esc(title)+' line chart"></canvas><details><summary>Accessible text fallback</summary><table><tbody>'+rows+'</tbody></table></details></section>'}
-function chart(title,key){let values=[0,1,2,3,4,5,num(store[key]||0)],labels=['M','T','W','T','F','S','S'];if(key==='mood'){values=store.mood.slice(0,7).reverse().map(x=>num(x.score));labels=values.map((x,i)=>i+1)}if(key==='study'){values=store.study.slice(0,7).reverse().map(x=>num(x.minutes));labels=values.map((x,i)=>i+1)}if(key==='weight'){values=store.logs.filter(x=>x.type==='weight').slice(0,7).reverse().map(x=>num(x.value));labels=values.map((x,i)=>i+1)}if(key==='prs'){values=store.exercises.slice(0,7).reverse().map(x=>num(x.pr));labels=values.map((x,i)=>i+1)}return line(title,values.length?values:[0],labels.length?labels:['1'],key==='mood'?'#ff9bc8':'#8eff70')}
-function dashboard(){return hero('Today is your operating system','Stay locked in, '+(store.profile.name||'Operator')+'.','Small actions compound. Every form writes real data to this device.')+'<section class="metrics"><div>XP<strong>'+store.xp+'</strong><small>'+(store.arc.active?'ARC active, x1.5 globally':'local progress')+'</small></div><div>STREAK<strong>'+store.streak+'</strong><small>days</small></div><div>WATER<strong>'+store.water+'/8</strong><small>glasses</small></div><div>LOGS<strong>'+store.logs.length+'</strong><small>total</small></div></section><section class="grid-two">'+card('Quick actions','<div class="action-grid">'+btn('water','Log water','primary')+btn('workout','Log workout')+btn('meal','Log meal')+btn('study','Log study')+btn('habit','Complete habit')+'</div>')+card('Exam revision plan','<form id="exam-form" class="inline-form"><label>Exam date <input type="date" name="examDate" value="'+esc(store.examDate)+'"></label><button class="btn primary">Regenerate dates</button></form><ul class="date-list">'+(store.revisionDates.length?store.revisionDates.map(x=>'<li><strong>'+x.date+'</strong><span>'+esc(x.label)+'</span></li>').join(''):'<li>Add an exam date to generate exam-30, exam-14, exam-7, exam-3 and exam-1.</li>')+'</ul>')+'</section><section class="grid-two">'+card('Today stack',list(store.logs))+card('Recent activity',list(store.feed))+'</section><section class="chart-grid">'+chart('Water','water')+chart('Streaks','streak')+'</section>'}
-function train(){const opts=store.sports.concat(store.customSports).filter((x,i,a)=>a.indexOf(x)===i).map(x=>'<option>'+esc(x)+'</option>').join('');return hero('Train','Make performance repeatable.','Multi-sport logging keeps custom sport text, route, pace and cadence on-device.')+card('Multi-sport log','<form id="sport-form" class="form-grid"><label>Sport <select name="sport">'+opts+'</select></label><label>Custom sport text <input name="customSport" placeholder="Add your sport"></label><label>Duration minutes <input name="duration" type="number" value="30"></label><label>Distance km <input name="distance" type="number" step="0.1"></label><label>Pace <input name="pace" placeholder="5:30/km"></label><label>Cadence <input name="cadence" placeholder="170 spm"></label><label>Route or heatmap note <input name="route" placeholder="Park loop or heatmap tag"></label><label>PR value <input name="pr" type="number" step="0.1"></label><label class="full">Session note <textarea name="note"></textarea></label><button class="btn primary">Save sport session</button></form>')+card('Trends','<div class="chart-grid">'+chart('PRs','prs')+chart('Weight','weight')+'</div>')+card('Training history',list(store.exercises))}
-function nutrition(){return hero('Nutrition','Feed the work.','Search local food data, quick add a meal, and review history.')+card('Food search and quick add','<form id="food-form" class="inline-form"><label>Search foods <input id="food-query" name="query" placeholder="Search local foods"></label><button class="btn">Search</button></form><div class="food-grid">'+['Protein oats','Chicken rice bowl','Greek yoghurt crunch','Green recovery smoothie','Tuna bean jacket potato','Turkey pesto pasta','Tofu noodle stir-fry'].map(x=>'<button type="button" class="food-item" data-action="quick-food" data-food="'+esc(x)+'"><strong>'+esc(x)+'</strong><small>Quick add locally</small></button>').join('')+'</div>')+card('Meal history',list(store.meals))}
-function mind(){return hero('Mind','Protect attention before you spend it.','Mood graph, journal prompts and study streaks are local-only.')+'<section class="grid-two">'+card('Mood graph','<form id="mood-form" class="inline-form"><label>Score <input name="score" type="number" min="1" max="10" value="7"></label><label>Note <input name="note"></label><button class="btn primary">Log mood</button></form>'+chart('Mood','mood'))+card('Journal prompts','<form id="journal-form"><label>Prompt <select name="prompt"><option>What deserves attention today?</option><option>What did you learn?</option><option>What is one kind next action?</option></select></label><label>Reflection <textarea name="text" required></textarea></label><button class="btn primary">Save reflection</button></form>'+list(store.journal))+'</section><section class="grid-two">'+card('Study streak','<form id="study-form" class="inline-form"><label>Minutes <input name="minutes" type="number" value="25"></label><label>Subject <input name="subject" value="Focus"></label><button class="btn primary">Log study</button></form>'+chart('Study','study'))+card('Study history',list(store.study))+'</section>'}
-function life(){const hs=Object.keys(store.habits).map(k=>'<button type="button" class="check-row '+(store.habits[k].done?'done':'')+'" data-action="toggle-habit" data-habit="'+esc(k)+'"><span>'+(store.habits[k].done?'Done':'Open')+'</span><strong>'+esc(store.habits[k].name)+'</strong><small>'+esc(store.habits[k].schedule)+'</small></button>').join('');return hero('Life','Build the baseline.','Habit schedules, skincare, private vault search, and run route detail.')+'<section class="grid-two">'+card('Habit schedules','<form id="habit-form" class="inline-form"><label>Habit <input name="habit" required></label><label>Schedule <select name="schedule"><option>Daily</option><option>Weekdays</option><option>Weekends</option></select></label><button class="btn primary">Add habit</button></form><div class="check-list">'+hs+'</div>')+card('Skincare','<form id="skin-form" class="inline-form"><label>Step <input name="step" required></label><label>When <select name="when"><option>Morning</option><option>Evening</option></select></label><button class="btn">Add step</button></form>'+list(store.skincare))+'</section><section class="grid-two">'+card('Vault search','<form id="vault-form" class="inline-form"><label>Search private notes <input name="query"></label><button class="btn">Search</button></form><p class="muted">Local-only vault: no upload.</p>'+list(store.vault))+card('Runs route, pace, cadence and heatmap','<form id="run-form" class="form-grid"><label>Route <input name="route" required></label><label>Pace <input name="pace"></label><label>Cadence <input name="cadence"></label><label>Heatmap note <input name="heatmap"></label><button class="btn primary">Save run</button></form>'+list(store.runs))+'</section>'}
-function squadView(){const m=store.squad.members.map(x=>'<div class="member"><span class="avatar">'+x.initials+'</span><div><strong>'+esc(x.name)+'</strong><small>'+esc(x.personality)+' · '+esc(x.pattern)+'</small><small>Daily activity '+x.activity+'%</small></div></div>').join('');const rows=store.squad.standings.map((x,i)=>'<tr><th>'+Number(i+1)+'</th><td>'+esc(x.name)+'</td><td>'+x.points+'</td><td>'+esc(x.movement)+'</td></tr>').join('');return hero('Squad','Compete with your consistency.','Local simulation · deterministic generated members, initials avatars, personalities and weekly activity.')+'<section class="grid-two">'+card('Generated members','<div class="members">'+m+'</div>')+card('Weekly MVP','<div class="mvp"><span class="avatar">'+store.squad.mvp.slice(0,2).toUpperCase()+'</span><h3>'+esc(store.squad.mvp)+'</h3><p class="muted">Highest simulated weekly contribution.</p></div>'+btn('refresh-squad','Refresh local week'))+'</section>'+card('Weekly standings','<div class="table-scroll"><table><thead><tr><th>Rank</th><th>Member</th><th>Points</th><th>Movement</th></tr></thead><tbody>'+rows+'</tbody></table></div><p class="notice">Local simulation · top two promoted, bottom two in relegation zone.</p>')}
-function advanced(){const overdue=store.goals.filter(x=>x.due&&x.due<today()&&num(x.progress)<100);return hero('Control room','Own the system.','ARC, goals, glow-up, privacy, export/import/reset and browser scheduling.')+card('ARC multiplier','<p class="notice">ARC is '+(store.arc.active?'active: every central XP award is exactly x1.5.':'inactive: base awards apply.')+'</p>'+btn('toggle-arc',store.arc.active?'Deactivate ARC':'Activate ARC','primary'))+card('Goals and overdue focus','<form id="goal-form" class="inline-form"><label>Goal <input name="title" required></label><label>Due <input name="due" type="date"></label><button class="btn">Add goal</button></form><div class="goal-list">'+store.goals.map(x=>'<div class="goal '+(x.due&&x.due<today()&&num(x.progress)<100?'overdue':'')+'"><strong>'+esc(x.title)+'</strong><small>'+esc(x.due||'No due date')+'</small><progress max="100" value="'+num(x.progress)+'"></progress></div>').join('')+'</div><p class="muted">'+overdue.length+' overdue goal(s) have a red glow.</p>')+card('Glow-up 4 tracks','<div class="track-list">'+['fitness','style','mind','life'].map(k=>'<label>'+k+' <output>'+num(store.glowUp[k])+'%</output><progress max="100" value="'+num(store.glowUp[k])+'"></progress></label>').join('')+'</div><div class="cinematic-card"><strong>Next scene</strong><p>Consistency is the cinematic card.</p></div>')+card('Exam date and revision schedule','<form id="exam-advanced-form" class="inline-form"><label>Exam date <input type="date" name="examDate" value="'+esc(store.examDate)+'"></label><button class="btn">Regenerate backward dates</button></form><p class="muted">'+esc(store.revisionDates.map(x=>x.date).join(' · ')||'No exam date set')+'</p>')+card('Privacy and administration','<form id="privacy-form" class="form-grid"><label>Role <select name="role"><option '+(store.privacy.role==='member'?'selected':'')+'>member</option><option '+(store.privacy.role==='admin'?'selected':'')+'>admin</option></select></label><label>Visibility <select name="visibility"><option>private</option><option> squad</option></select></label><label class="check"><input name="incognito" type="checkbox" '+(store.privacy.incognito?'checked':'')+'> Incognito mode</label><button class="btn primary">Save privacy</button></form><p class="muted">Static-site/browser limitation: no server admin, identity or guaranteed background execution. Export/import is your control.</p><div class="action-grid">'+btn('export','Export state')+btn('import','Import state')+btn('reset','Reset local state','danger')+'</div><input id="import-file" type="file" accept="application/json" hidden>')+card('Background scheduling','<p class="muted">Open-tab scheduling retained. Feature-detected periodic Background Sync is best effort only.</p><p id="sync-status" class="notice">Checking browser capability...</p>')}
-function render(){const root=document.getElementById('app');if(!root)return;const route=(location.hash||'#dashboard').slice(1);store.route=views.has(route)?route:'dashboard';root.innerHTML=views.get(store.route)(store);document.querySelectorAll('[data-route]').forEach(n=>n.classList.toggle('active',n.dataset.route===store.route));draw();sync();const o=document.getElementById('onboarding');if(o)o.hidden=Boolean(store.onboardingComplete)}
-function draw(){document.querySelectorAll('.line-chart').forEach(c=>{const v=JSON.parse(c.dataset.values||'[]'),l=JSON.parse(c.dataset.labels||'[]'),ctx=c.getContext('2d'),w=c.clientWidth||500,h=200;if(!ctx)return;const r=devicePixelRatio||1;c.width=w*r;c.height=h*r;ctx.scale(r,r);const max=Math.max(1,...v),x=i=>30+(w-42)*(v.length<2?.5:i/(v.length-1)),y=n=>12+(h-38)*(1-n/max);ctx.strokeStyle='#33404f';ctx.beginPath();ctx.moveTo(30,12);ctx.lineTo(30,h-26);ctx.lineTo(w-12,h-26);ctx.stroke();ctx.fillStyle='#9aa6b4';ctx.font='11px system-ui';l.forEach((z,i)=>ctx.fillText(z,x(i)-4,h-8));ctx.strokeStyle=c.dataset.colour;ctx.lineWidth=3;ctx.beginPath();v.forEach((z,i)=>i?ctx.lineTo(x(i),y(z)):ctx.moveTo(x(i),y(z)));ctx.stroke();ctx.fillStyle=c.dataset.colour;v.forEach((z,i)=>{ctx.beginPath();ctx.arc(x(i),y(z),4,0,Math.PI*2);ctx.fill()});c.onmousemove=e=>{const b=c.getBoundingClientRect(),i=Math.max(0,Math.min(v.length-1,Math.round((e.clientX-b.left-30)/(w-42)*(v.length-1))));c.title=(l[i]||'')+': '+v[i]}})}
-function sync(){const n=document.getElementById('sync-status');if(n)n.textContent='periodicSync' in (navigator.serviceWorker||{})?'Periodic Background Sync feature detected; permission and policy still apply.':'Periodic Background Sync unavailable; open-tab scheduling remains active.'}
-function fd(f){const o={};new FormData(f).forEach((v,k)=>o[k]=v);return o}function submit(f){const d=fd(f);if(f.id==='onboarding-form'){store.profile=Object.assign(store.profile,d);store.onboardingComplete=true}else if(f.id==='exam-form'||f.id==='exam-advanced-form'){store.examDate=d.examDate||'';store.revisionDates=revision(store.examDate)}else if(f.id==='sport-form'){const custom=String(d.customSport||'').trim(),sport=custom||d.sport;if(custom&&!store.customSports.includes(custom))store.customSports.push(custom);const e={id:uid('exercise'),label:sport+' session',sport,duration:num(d.duration),distance:num(d.distance),pace:d.pace||'',cadence:d.cadence||'',route:d.route||'',detail:(d.route||'No route')+' · '+(d.pace||'pace unset')+' · '+(d.cadence||'cadence unset'),pr:num(d.pr),note:d.note||''};store.exercises.unshift(e);record('exercise',e)}else if(f.id==='mood-form'){store.mood.unshift({label:'Mood '+d.score,score:num(d.score),detail:d.note||'',date:today()});awardXp(5,'Mood check-in')}else if(f.id==='journal-form'){store.journal.unshift({label:d.prompt,detail:d.text,date:today()});awardXp(5,'Reflection saved')}else if(f.id==='study-form'){store.study.unshift({label:d.subject,detail:d.minutes+' minutes',minutes:num(d.minutes),date:today()});awardXp(10,'Focus block logged')}else if(f.id==='habit-form'){store.habits[d.habit.toLowerCase()]={name:d.habit,schedule:d.schedule,done:false}}else if(f.id==='skin-form'){store.skincare.unshift({label:d.step,detail:d.when,date:today()})}else if(f.id==='run-form'){store.runs.unshift({label:d.route,detail:(d.pace||'pace unset')+' · '+(d.cadence||'cadence unset')+' · '+(d.heatmap||'no heatmap note'),date:today()})}else if(f.id==='goal-form'){store.goals.push({id:uid('goal'),title:d.title,due:d.due||'',progress:0})}else if(f.id==='privacy-form'){store.privacy={role:d.role,visibility:String(d.visibility).trim(),incognito:Boolean(d.incognito)}}save();render();toast('Saved locally')}
-function action(n){const a=n.dataset.action;if(a==='water'){store.water=Math.min(8,store.water+1);record('water',{label:'Water glass',detail:store.water+'/8 glasses'})}if(a==='workout')record('workout',{label:'Workout',detail:'Quick session'})if(a==='meal'){store.meals.unshift({label:'Quick meal',detail:'Local quick add',date:today()});record('meal',{label:'Meal',detail:'Quick meal'})}if(a==='study'){store.study.unshift({label:'Focus block',detail:'25 minutes',minutes:25,date:today()});awardXp(10,'Focus block logged')}if(a==='habit'){const k=Object.keys(store.habits)[0];if(k){store.habits[k].done=!store.habits[k].done;if(store.habits[k].done){store.streak++;awardXp(8,'Habit complete')}}}if(a==='toggle-habit'){const k=n.dataset.habit;if(store.habits[k]){store.habits[k].done=!store.habits[k].done;if(store.habits[k].done){store.streak++;awardXp(8,'Habit complete')}}}if(a==='toggle-arc')store.arc.active=!store.arc.active;if(a==='refresh-squad')store.squad=squad();if(a==='quick-food'){store.meals.unshift({label:n.dataset.food,detail:'Quick add from local food search',date:today()});awardXp(5,n.dataset.food+' added')}if(a==='export'){const b=new Blob([JSON.stringify(store,null,2)],{type:'application/json'}),l=document.createElement('a');l.href=URL.createObjectURL(b);l.download='locked-in-v3-backup-'+today()+'.json';l.click();URL.revokeObjectURL(l.href)}if(a==='import'){const i=document.getElementById('import-file');if(i)i.click()}if(a==='reset'&&confirm('Reset all local progress?')){localStorage.removeItem(storageKey);store=base()}save();render()}
-function start(){store=load();if(!store.squad)store.squad=squad();views.set('dashboard',dashboard);views.set('train',train);views.set('nutrition',nutrition);views.set('mind',mind);views.set('life',life);views.set('squad',squadView);views.set('advanced',advanced);document.addEventListener('click',e=>{const r=e.target.closest('[data-route]');if(r){e.preventDefault();location.hash=r.dataset.route}const a=e.target.closest('[data-action]');if(a){e.preventDefault();action(a)}});document.addEventListener('submit',e=>{if(e.target.id==='onboarding-form'||e.target.closest('#app')||e.target.id==='exam-form'){e.preventDefault();submit(e.target)}});document.addEventListener('change',e=>{if(e.target.id==='import-file'&&e.target.files[0]){const rd=new FileReader();rd.onload=()=>{try{store=normalize(JSON.parse(String(rd.result)));save();render();toast('State imported')}catch(x){toast('Import failed')}};rd.readAsText(e.target.files[0])}});addOnboarding();render();save();if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});setInterval(()=>{if(document.visibilityState==='visible')save()},60000)}
-function addOnboarding(){const n=document.getElementById('onboarding');if(!n)return;n.innerHTML='<section class="modal"><p class="eyebrow">START HERE</p><h2>Build your operating system</h2><p class="muted">Your data stays on this device.</p><form id="onboarding-form" class="form-grid"><label class="full">Name <input name="name" value="'+esc(store.profile.name)+'"></label><label>Age <input name="age" type="number"></label><label>Date of birth <input name="dob" type="date"></label><label>Height <input name="height"></label><label>Weight <input name="weight"></label><label>Body type <input name="bodyType"></label><label>Diet <input name="diet"></label><label>Equipment <input name="equipment"></label><label class="full">Goals <input name="goals"></label><button class="btn" type="button" data-action="skip-onboarding">Skip for now</button><button class="btn primary">Complete setup</button></form></section>'}views.set('dashboard',dashboard);window.app={state:()=>store,load,save,toast,escape:esc,record,awardXp,registerView:(n,v)=>views.set(n,v),registerAction:(n,h)=>actions.set(n,h),views,actions,storageKey};window.LockedIn=window.app;window.esc=esc;window.awardXp=awardXp;window.state=()=>store;if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start()})();
+(function () {
+  "use strict";
+  const storageKey = "locked-in-v3-state";
+  const viewMap = new Map();
+  const actionMap = new Map();
+  let store = makeState();
+  let toastTimer = null;
+  window.LIViews = window.LIViews || {};
+
+  function makeState() {
+    return { profile: { name: "Operator", age: "", dob: "", height: "", weight: "", bodyType: "", diet: "", equipment: "", goals: "" }, onboardingComplete: false, route: "dashboard", xp: 0, streak: 0, water: 0, logs: new Array(), meals: new Array(), exercises: new Array(), study: new Array(), habits: new Object(), quests: dailyQuests(), creatine: new Array(), feed: new Array() };
+  }
+
+  function dailyQuests() {
+    const list = new Array();
+    list.push({ id: "quest-workout", name: "Log a workout", type: "workout", done: false, date: today() });
+    list.push({ id: "quest-meal", name: "Log a meal", type: "meal", done: false, date: today() });
+    list.push({ id: "quest-focus", name: "Complete a focus block", type: "study", done: false, date: today() });
+    return list;
+  }
+
+  function numberValue(value, fallback) {
+    const result = Number(value);
+    return Number.isFinite(result) ? result : fallback;
+  }
+
+  function copyList(value) {
+    return Array.isArray(value) ? value.slice() : new Array();
+  }
+
+  function normalize(value) {
+    const source = value && typeof value === "object" ? value : new Object();
+    const result = makeState();
+    const profile = source.profile && typeof source.profile === "object" ? source.profile : new Object();
+    result.profile = Object.assign(result.profile, profile);
+    result.onboardingComplete = Boolean(source.onboardingComplete);
+    result.route = typeof source.route === "string" ? source.route : "dashboard";
+    result.xp = numberValue(source.xp, 0);
+    result.streak = numberValue(source.streak, 0);
+    result.water = numberValue(source.water, 0);
+    result.logs = copyList(source.logs);
+    result.meals = copyList(source.meals);
+    result.exercises = copyList(source.exercises);
+    result.study = copyList(source.study);
+    result.habits = source.habits && typeof source.habits === "object" ? Object.assign(new Object(), source.habits) : new Object();
+    result.creatine = copyList(source.creatine);
+    result.feed = copyList(source.feed);
+    result.quests = freshQuests(source.quests) ? source.quests : dailyQuests();
+    return result;
+  }
+
+  function freshQuests(value) {
+    return Array.isArray(value) && value.length === 3 && value.every(function (item) { return item && item.date === today(); });
+  }
+
+  function loadState() {
+    try {
+      const raw = window.localStorage.getItem(storageKey);
+      return normalize(raw ? JSON.parse(raw) : new Object());
+    } catch (error) {
+      return makeState();
+    }
+  }
+
+  function setSaveStatus(text) {
+    const node = document.getElementById("save-status");
+    if (node) node.textContent = text;
+  }
+
+  function saveState() {
+    try {
+      window.localStorage.setItem(storageKey, JSON.stringify(store));
+      setSaveStatus("Saved locally");
+    } catch (error) {
+      setSaveStatus("Local save unavailable");
+    }
+  }
+
+  function today() {
+    return new Date().toISOString().slice(0, 10);
+  }
+
+  function uniqueId(prefix) {
+    return (prefix || "id") + "-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8);
+  }
+
+  function escapeHtml(value) {
+    return String(value === null || value === undefined ? "" : value).split("&").join("&amp;").split("<").join("&lt;").split(">").join("&gt;").split('"').join("&quot;").split("'").join("&#39;");
+  }
+
+  function toast(message) {
+    const node = document.getElementById("toast");
+    if (!node) return;
+    node.textContent = message;
+    node.hidden = false;
+    window.clearTimeout(toastTimer);
+    toastTimer = window.setTimeout(function () { node.hidden = true; }, 2400);
+  }
+
+  function addFeed(label, detail) {
+    store.feed.unshift({ id: uniqueId("feed"), label: label, detail: detail || "", date: today() });
+    store.feed = store.feed.slice(0, 30);
+  }
+
+  function awardXp(amount, reason) {
+    const points = numberValue(amount, 0);
+    store.xp = Math.max(0, numberValue(store.xp, 0) + points);
+    if (points > 0) addFeed("+" + points + " XP", reason || "Progress recorded");
+  }
+
+  function completeQuest(type) {
+    const quest = store.quests.find(function (item) { return item.type === type && !item.done; });
+    if (!quest) return;
+    quest.done = true;
+    addFeed("Quest complete", quest.name);
+    awardXp(15, quest.name);
+  }
+
+  function recordEvent(type, details) {
+    const entry = Object.assign({ id: uniqueId(type), type: type, date: today(), timestamp: new Date().toISOString() }, details || new Object());
+    store.logs.unshift(entry);
+    store.logs = store.logs.slice(0, 100);
+    return entry;
+  }
+
+  function record(type, details) {
+    const entry = recordEvent(type, details);
+    awardXp(10, entry.label || type + " logged");
+    completeQuest(type);
+    saveState();
+    render();
+    return entry;
+  }
+
+  function addCreatine(dose, timing) {
+    const entry = { id: uniqueId("creatine"), name: "Creatine monohydrate", dose: dose || "5g", timing: timing || "daily", date: today() };
+    store.creatine.unshift(entry);
+    recordEvent("supplement", { label: "Creatine logged", detail: entry.dose });
+    awardXp(2, "Creatine logged");
+    saveState();
+    render();
+    toast("Creatine logged");
+    return entry;
+  }
+
+  function metric(label, value, note) {
+    return "<article class='stat'><span>" + escapeHtml(label) + "</span><strong>" + escapeHtml(value) + "</strong><small>" + escapeHtml(note) + "</small></article>";
+  }
+
+  function card(title, body) {
+    return "<article class='card'><h2>" + escapeHtml(title) + "</h2>" + body + "</article>";
+  }
+
+  function hero(kicker, title, text) {
+    return "<section class='hero'><p class='eyebrow'>" + escapeHtml(kicker) + "</p><h1>" + escapeHtml(title) + "</h1><p class='muted'>" + escapeHtml(text) + "</p></section>";
+  }
+
+  function listMarkup(items) {
+    if (!items.length) return "<p class='empty'>Nothing logged yet. Choose one small action.</p>";
+    return "<div class='activity-list'>" + items.slice(0, 8).map(function (item) { return "<div class='activity-row'><div><strong>" + escapeHtml(item.label || item.name || item.type || "Entry") + "</strong><small>" + escapeHtml(item.detail || item.date || "") + "</small></div><span class='muted'>" + escapeHtml(item.type || "log") + "</span></div>"; }).join("") + "</div>";
+  }
+
+  function questMarkup() {
+    return "<div class='check-list'>" + store.quests.map(function (quest) { return "<div class='check-row " + (quest.done ? "done" : "") + "'><span>" + (quest.done ? "Done" : "Open") + "</span><strong>" + escapeHtml(quest.name) + "</strong><small>" + escapeHtml(quest.type) + "</small></div>"; }).join("") + "</div>";
+  }
+
+  function habitMarkup() {
+    const names = new Array();
+    names.push("Train or walk");
+    names.push("2L water");
+    names.push("Read 20 minutes");
+    names.push("Morning skincare");
+    names.push("No phone in bed");
+    return "<div class='check-list'>" + names.map(function (name) { const key = name.toLowerCase(); const done = Boolean(store.habits[key]); return "<button class='check-row " + (done ? "done" : "") + "' data-action='habit' data-habit='" + escapeHtml(key) + "'><span>" + (done ? "Done" : "Open") + "</span><strong>" + escapeHtml(name) + "</strong><small>" + (done ? "complete today" : "mark complete") + "</small></button>"; }).join("") + "</div>";
+  }
+
+  function quickMarkup() {
+    return "<div class='action-grid'><button class='btn primary' data-action='water'>Log water</button><button class='btn' data-action='workout'>Log workout</button><button class='btn' data-action='meal'>Log meal</button><button class='btn' data-action='study'>Log study</button><button class='btn' data-action='habit'>Complete habit</button><button class='btn' data-action='creatine'>Log creatine</button><button class='btn' data-action='export'>Export state</button><button class='btn' data-action='import'>Import state</button><button class='btn danger' data-action='reset'>Reset</button></div><input id='import-file' type='file' accept='application/json' hidden>";
+  }
+
+  function dashboard() {
+    const name = store.profile.name || "Operator";
+    const feed = store.feed.length ? store.feed : store.logs;
+    return hero("TODAY'S OPERATING SYSTEM", "Stay locked in, " + name + ".", "Small actions compound. Every form writes real data to this device.") + "<section class='stats-grid'>" + metric("XP", store.xp, "local progress") + metric("STREAK", store.streak, "days") + metric("WATER", store.water + "/8", "glasses") + metric("LOGS", store.logs.length, "total") + "</section><section class='grid-two'>" + card("Quick actions", quickMarkup()) + card("Today Stack", "<p class='muted'>Three daily quests keep the next move obvious.</p>" + questMarkup()) + card("Recent activity", listMarkup(feed)) + card("Checklist", habitMarkup()) + "</section>";
+  }
+
+  function fallback(route, title, text) {
+    return hero(route.toUpperCase(), title, text) + card("Module ready", "<p class='muted'>This route is available. Its feature script can register a richer view without changing the core contract.</p><button class='btn' data-route='dashboard'>Back to dashboard</button>");
+  }
+
+  function registerView(name, view) {
+    if (typeof view !== "function") return;
+    viewMap.set(name, view);
+    Object.defineProperty(window.LIViews, name, { value: view, writable: true, configurable: true, enumerable: true });
+  }
+
+  function registerAction(name, handler) {
+    if (typeof handler === "function") actionMap.set(name, handler);
+  }
+
+  function routeTo(route) {
+    window.location.hash = route || "dashboard";
+  }
+
+  function render() {
+    const root = document.getElementById("app");
+    if (!root) return;
+    const requested = (window.location.hash || "#dashboard").slice(1) || "dashboard";
+    const view = viewMap.get(requested) || viewMap.get("dashboard");
+    const route = viewMap.has(requested) ? requested : "dashboard";
+    store.route = route;
+    root.innerHTML = view(store);
+    document.querySelectorAll("[data-route]").forEach(function (node) { node.classList.toggle("active", node.getAttribute("data-route") === route); });
+    showOnboarding();
+  }
+
+  function showOnboarding() {
+    const node = document.getElementById("onboarding");
+    if (node) node.hidden = Boolean(store.onboardingComplete);
+  }
+
+  function logWater() {
+    store.water = Math.min(8, numberValue(store.water, 0) + 1);
+    recordEvent("water", { label: "Water glass", detail: store.water + "/8 glasses" });
+    awardXp(5, "Hydration logged");
+    saveState();
+    render();
+    toast("Hydration logged");
+  }
+
+  function logQuick(type, label, detail) {
+    record(type, { label: label, detail: detail });
+    addCreatine("5g", "with daily log");
+    toast(label + " logged");
+  }
+
+  function toggleHabit(node) {
+    const key = node ? node.getAttribute("data-habit") : "habit";
+    if (!key) return;
+    store.habits[key] = !store.habits[key];
+    record("habit", { label: key, detail: store.habits[key] ? "complete today" : "unchecked" });
+    toast(store.habits[key] ? "Habit locked in" : "Habit unchecked");
+  }
+
+  function exportState() {
+    const blob = new Blob(new Array(JSON.stringify(store, null, 2)), { type: "application/json" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "locked-in-v3-backup-" + today() + ".json";
+    link.click();
+    URL.revokeObjectURL(link.href);
+    toast("Export ready");
+  }
+
+  function importState() {
+    const input = document.getElementById("import-file");
+    if (input) input.click();
+  }
+
+  function applyImport(file) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function () { try { store = normalize(JSON.parse(String(reader.result))); saveState(); render(); toast("State imported"); } catch (error) { toast("Import failed"); } };
+    reader.readAsText(file);
+  }
+
+  function resetState() {
+    if (!window.confirm("Reset all local progress?")) return;
+    try { window.localStorage.removeItem(storageKey); } catch (error) { return; }
+    store = makeState();
+    saveState();
+    render();
+    toast("Local progress reset");
+  }
+
+  function handleAction(node) {
+    const handler = actionMap.get(node.getAttribute("data-action"));
+    if (handler) handler(node);
+  }
+
+  function submitOnboarding(form) {
+    const data = new FormData(form);
+    const profile = store.profile;
+    profile.name = String(data.get("name") || "Operator").trim() || "Operator";
+    profile.age = String(data.get("age") || "");
+    profile.dob = String(data.get("dob") || "");
+    profile.height = String(data.get("height") || "");
+    profile.weight = String(data.get("weight") || "");
+    profile.bodyType = String(data.get("bodyType") || "");
+    profile.diet = String(data.get("diet") || "");
+    profile.equipment = String(data.get("equipment") || "");
+    profile.goals = String(data.get("goals") || "");
+    store.onboardingComplete = true;
+    saveState();
+    render();
+    toast("Setup complete");
+  }
+
+  function bindEvents() {
+    document.addEventListener("click", function (event) {
+      const routeNode = event.target.closest ? event.target.closest("[data-route]") : null;
+      if (routeNode) { event.preventDefault(); routeTo(routeNode.getAttribute("data-route")); return; }
+      const actionNode = event.target.closest ? event.target.closest("[data-action]") : null;
+      if (actionNode) { event.preventDefault(); handleAction(actionNode); }
+    });
+    document.addEventListener("submit", function (event) {
+      const form = event.target;
+      if (!form || form.id !== "onboarding-form") return;
+      event.preventDefault();
+      submitOnboarding(form);
+    });
+    document.addEventListener("change", function (event) {
+      if (event.target && event.target.id === "import-file") applyImport(event.target.files && event.target.files.item(0));
+    });
+    window.addEventListener("hashchange", render);
+  }
+
+  registerView("dashboard", dashboard);
+  registerView("train", function () { return fallback("train", "Train", "Performance is built from repeatable sessions."); });
+  registerView("nutrition", function () { return fallback("nutrition", "Nutrition", "Record the next meal, not a perfect plan."); });
+  registerView("mind", function () { return fallback("mind", "Mind", "Protect attention before you ask it to perform."); });
+  registerView("life", function () { return fallback("life", "Life", "Build the baseline that makes every other goal easier."); });
+  registerView("squad", function () { return fallback("squad", "Squad", "Accountability is a force multiplier."); });
+  registerView("advanced", function () { return fallback("advanced", "Control room", "Your state is local-first and exportable."); });
+  registerAction("water", logWater);
+  registerAction("workout", function () { logQuick("workout", "Workout", "Quick session logged"); });
+  registerAction("meal", function () { logQuick("meal", "Meal", "Quick meal logged"); });
+  registerAction("study", function () { logQuick("study", "Study", "Focus block logged"); });
+  registerAction("habit", toggleHabit);
+  registerAction("creatine", function () { addCreatine("5g", "daily"); });
+  registerAction("export", exportState);
+  registerAction("import", importState);
+  registerAction("reset", resetState);
+
+  const api = { state: function () { return store; }, load: loadState, save: saveState, toast: toast, escape: escapeHtml, esc: escapeHtml, num: numberValue, record: record, render: render, registerView: registerView, registerAction: registerAction, awardXp: awardXp, addCreatine: addCreatine, route: routeTo, actions: actionMap, views: viewMap, source: window.LOCKED_DATA || new Object() };
+  window.app = api;
+  window.LockedIn = api;
+  window.esc = escapeHtml;
+  window.num = numberValue;
+  window.save = saveState;
+  window.toast = toast;
+  window.awardXp = awardXp;
+  window.addCreatine = addCreatine;
+  window.state = function () { return store; };
+
+  function start() {
+    store = loadState();
+    bindEvents();
+    saveState();
+    render();
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start, { once: true });
+  else start();
+}());
