@@ -1,355 +1,59 @@
-(function () {
-  "use strict";
-  const storageKey = "locked-in-v3-state";
-  const viewMap = new Map();
-  const actionMap = new Map();
-  let store = makeState();
-  let toastTimer = null;
-  window.LIViews = window.LIViews || {};
-
-  function makeState() {
-    return { profile: { name: "Operator", age: "", dob: "", height: "", weight: "", bodyType: "", diet: "", equipment: "", goals: "" }, onboardingComplete: false, route: "dashboard", xp: 0, streak: 0, water: 0, logs: new Array(), meals: new Array(), exercises: new Array(), study: new Array(), habits: new Object(), quests: dailyQuests(), creatine: new Array(), feed: new Array() };
-  }
-
-  function dailyQuests() {
-    const list = new Array();
-    list.push({ id: "quest-workout", name: "Log a workout", type: "workout", done: false, date: today() });
-    list.push({ id: "quest-meal", name: "Log a meal", type: "meal", done: false, date: today() });
-    list.push({ id: "quest-focus", name: "Complete a focus block", type: "study", done: false, date: today() });
-    return list;
-  }
-
-  function numberValue(value, fallback) {
-    const result = Number(value);
-    return Number.isFinite(result) ? result : fallback;
-  }
-
-  function copyList(value) {
-    return Array.isArray(value) ? value.slice() : new Array();
-  }
-
-  function normalize(value) {
-    const source = value && typeof value === "object" ? value : new Object();
-    const result = makeState();
-    const profile = source.profile && typeof source.profile === "object" ? source.profile : new Object();
-    result.profile = Object.assign(result.profile, profile);
-    result.onboardingComplete = Boolean(source.onboardingComplete);
-    result.route = typeof source.route === "string" ? source.route : "dashboard";
-    result.xp = numberValue(source.xp, 0);
-    result.streak = numberValue(source.streak, 0);
-    result.water = numberValue(source.water, 0);
-    result.logs = copyList(source.logs);
-    result.meals = copyList(source.meals);
-    result.exercises = copyList(source.exercises);
-    result.study = copyList(source.study);
-    result.habits = source.habits && typeof source.habits === "object" ? Object.assign(new Object(), source.habits) : new Object();
-    result.creatine = copyList(source.creatine);
-    result.feed = copyList(source.feed);
-    result.quests = freshQuests(source.quests) ? source.quests : dailyQuests();
-    return result;
-  }
-
-  function freshQuests(value) {
-    return Array.isArray(value) && value.length === 3 && value.every(function (item) { return item && item.date === today(); });
-  }
-
-  function loadState() {
-    try {
-      const raw = window.localStorage.getItem(storageKey);
-      return normalize(raw ? JSON.parse(raw) : new Object());
-    } catch (error) {
-      return makeState();
-    }
-  }
-
-  function setSaveStatus(text) {
-    const node = document.getElementById("save-status");
-    if (node) node.textContent = text;
-  }
-
-  function saveState() {
-    try {
-      window.localStorage.setItem(storageKey, JSON.stringify(store));
-      setSaveStatus("Saved locally");
-    } catch (error) {
-      setSaveStatus("Local save unavailable");
-    }
-  }
-
-  function today() {
-    return new Date().toISOString().slice(0, 10);
-  }
-
-  function uniqueId(prefix) {
-    return (prefix || "id") + "-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8);
-  }
-
-  function escapeHtml(value) {
-    return String(value === null || value === undefined ? "" : value).split("&").join("&amp;").split("<").join("&lt;").split(">").join("&gt;").split('"').join("&quot;").split("'").join("&#39;");
-  }
-
-  function toast(message) {
-    const node = document.getElementById("toast");
-    if (!node) return;
-    node.textContent = message;
-    node.hidden = false;
-    window.clearTimeout(toastTimer);
-    toastTimer = window.setTimeout(function () { node.hidden = true; }, 2400);
-  }
-
-  function addFeed(label, detail) {
-    store.feed.unshift({ id: uniqueId("feed"), label: label, detail: detail || "", date: today() });
-    store.feed = store.feed.slice(0, 30);
-  }
-
-  function awardXp(amount, reason) {
-    const points = numberValue(amount, 0);
-    store.xp = Math.max(0, numberValue(store.xp, 0) + points);
-    if (points > 0) addFeed("+" + points + " XP", reason || "Progress recorded");
-  }
-
-  function completeQuest(type) {
-    const quest = store.quests.find(function (item) { return item.type === type && !item.done; });
-    if (!quest) return;
-    quest.done = true;
-    addFeed("Quest complete", quest.name);
-    awardXp(15, quest.name);
-  }
-
-  function recordEvent(type, details) {
-    const entry = Object.assign({ id: uniqueId(type), type: type, date: today(), timestamp: new Date().toISOString() }, details || new Object());
-    store.logs.unshift(entry);
-    store.logs = store.logs.slice(0, 100);
-    return entry;
-  }
-
-  function record(type, details) {
-    const entry = recordEvent(type, details);
-    awardXp(10, entry.label || type + " logged");
-    completeQuest(type);
-    saveState();
-    render();
-    return entry;
-  }
-
-  function addCreatine(dose, timing) {
-    const entry = { id: uniqueId("creatine"), name: "Creatine monohydrate", dose: dose || "5g", timing: timing || "daily", date: today() };
-    store.creatine.unshift(entry);
-    recordEvent("supplement", { label: "Creatine logged", detail: entry.dose });
-    awardXp(2, "Creatine logged");
-    saveState();
-    render();
-    toast("Creatine logged");
-    return entry;
-  }
-
-  function metric(label, value, note) {
-    return "<article class='stat'><span>" + escapeHtml(label) + "</span><strong>" + escapeHtml(value) + "</strong><small>" + escapeHtml(note) + "</small></article>";
-  }
-
-  function card(title, body) {
-    return "<article class='card'><h2>" + escapeHtml(title) + "</h2>" + body + "</article>";
-  }
-
-  function hero(kicker, title, text) {
-    return "<section class='hero'><p class='eyebrow'>" + escapeHtml(kicker) + "</p><h1>" + escapeHtml(title) + "</h1><p class='muted'>" + escapeHtml(text) + "</p></section>";
-  }
-
-  function listMarkup(items) {
-    if (!items.length) return "<p class='empty'>Nothing logged yet. Choose one small action.</p>";
-    return "<div class='activity-list'>" + items.slice(0, 8).map(function (item) { return "<div class='activity-row'><div><strong>" + escapeHtml(item.label || item.name || item.type || "Entry") + "</strong><small>" + escapeHtml(item.detail || item.date || "") + "</small></div><span class='muted'>" + escapeHtml(item.type || "log") + "</span></div>"; }).join("") + "</div>";
-  }
-
-  function questMarkup() {
-    return "<div class='check-list'>" + store.quests.map(function (quest) { return "<div class='check-row " + (quest.done ? "done" : "") + "'><span>" + (quest.done ? "Done" : "Open") + "</span><strong>" + escapeHtml(quest.name) + "</strong><small>" + escapeHtml(quest.type) + "</small></div>"; }).join("") + "</div>";
-  }
-
-  function habitMarkup() {
-    const names = new Array();
-    names.push("Train or walk");
-    names.push("2L water");
-    names.push("Read 20 minutes");
-    names.push("Morning skincare");
-    names.push("No phone in bed");
-    return "<div class='check-list'>" + names.map(function (name) { const key = name.toLowerCase(); const done = Boolean(store.habits[key]); return "<button class='check-row " + (done ? "done" : "") + "' data-action='habit' data-habit='" + escapeHtml(key) + "'><span>" + (done ? "Done" : "Open") + "</span><strong>" + escapeHtml(name) + "</strong><small>" + (done ? "complete today" : "mark complete") + "</small></button>"; }).join("") + "</div>";
-  }
-
-  function quickMarkup() {
-    return "<div class='action-grid'><button class='btn primary' data-action='water'>Log water</button><button class='btn' data-action='workout'>Log workout</button><button class='btn' data-action='meal'>Log meal</button><button class='btn' data-action='study'>Log study</button><button class='btn' data-action='habit'>Complete habit</button><button class='btn' data-action='creatine'>Log creatine</button><button class='btn' data-action='export'>Export state</button><button class='btn' data-action='import'>Import state</button><button class='btn danger' data-action='reset'>Reset</button></div><input id='import-file' type='file' accept='application/json' hidden>";
-  }
-
-  function dashboard() {
-    const name = store.profile.name || "Operator";
-    const feed = store.feed.length ? store.feed : store.logs;
-    return hero("TODAY'S OPERATING SYSTEM", "Stay locked in, " + name + ".", "Small actions compound. Every form writes real data to this device.") + "<section class='stats-grid'>" + metric("XP", store.xp, "local progress") + metric("STREAK", store.streak, "days") + metric("WATER", store.water + "/8", "glasses") + metric("LOGS", store.logs.length, "total") + "</section><section class='grid-two'>" + card("Quick actions", quickMarkup()) + card("Today Stack", "<p class='muted'>Three daily quests keep the next move obvious.</p>" + questMarkup()) + card("Recent activity", listMarkup(feed)) + card("Checklist", habitMarkup()) + "</section>";
-  }
-
-  function fallback(route, title, text) {
-    return hero(route.toUpperCase(), title, text) + card("Module ready", "<p class='muted'>This route is available. Its feature script can register a richer view without changing the core contract.</p><button class='btn' data-route='dashboard'>Back to dashboard</button>");
-  }
-
-  function registerView(name, view) {
-    if (typeof view !== "function") return;
-    viewMap.set(name, view);
-    Object.defineProperty(window.LIViews, name, { value: view, writable: true, configurable: true, enumerable: true });
-  }
-
-  function registerAction(name, handler) {
-    if (typeof handler === "function") actionMap.set(name, handler);
-  }
-
-  function routeTo(route) {
-    window.location.hash = route || "dashboard";
-  }
-
-  function render() {
-    const root = document.getElementById("app");
-    if (!root) return;
-    const requested = (window.location.hash || "#dashboard").slice(1) || "dashboard";
-    const view = viewMap.get(requested) || viewMap.get("dashboard");
-    const route = viewMap.has(requested) ? requested : "dashboard";
-    store.route = route;
-    root.innerHTML = view(store);
-    document.querySelectorAll("[data-route]").forEach(function (node) { node.classList.toggle("active", node.getAttribute("data-route") === route); });
-    showOnboarding();
-  }
-
-  function showOnboarding() {
-    const node = document.getElementById("onboarding");
-    if (node) node.hidden = Boolean(store.onboardingComplete);
-  }
-
-  function logWater() {
-    store.water = Math.min(8, numberValue(store.water, 0) + 1);
-    recordEvent("water", { label: "Water glass", detail: store.water + "/8 glasses" });
-    awardXp(5, "Hydration logged");
-    saveState();
-    render();
-    toast("Hydration logged");
-  }
-
-  function logQuick(type, label, detail) {
-    record(type, { label: label, detail: detail });
-    addCreatine("5g", "with daily log");
-    toast(label + " logged");
-  }
-
-  function toggleHabit(node) {
-    const key = node ? node.getAttribute("data-habit") : "habit";
-    if (!key) return;
-    store.habits[key] = !store.habits[key];
-    record("habit", { label: key, detail: store.habits[key] ? "complete today" : "unchecked" });
-    toast(store.habits[key] ? "Habit locked in" : "Habit unchecked");
-  }
-
-  function exportState() {
-    const blob = new Blob(new Array(JSON.stringify(store, null, 2)), { type: "application/json" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = "locked-in-v3-backup-" + today() + ".json";
-    link.click();
-    URL.revokeObjectURL(link.href);
-    toast("Export ready");
-  }
-
-  function importState() {
-    const input = document.getElementById("import-file");
-    if (input) input.click();
-  }
-
-  function applyImport(file) {
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = function () { try { store = normalize(JSON.parse(String(reader.result))); saveState(); render(); toast("State imported"); } catch (error) { toast("Import failed"); } };
-    reader.readAsText(file);
-  }
-
-  function resetState() {
-    if (!window.confirm("Reset all local progress?")) return;
-    try { window.localStorage.removeItem(storageKey); } catch (error) { return; }
-    store = makeState();
-    saveState();
-    render();
-    toast("Local progress reset");
-  }
-
-  function handleAction(node) {
-    const handler = actionMap.get(node.getAttribute("data-action"));
-    if (handler) handler(node);
-  }
-
-  function submitOnboarding(form) {
-    const data = new FormData(form);
-    const profile = store.profile;
-    profile.name = String(data.get("name") || "Operator").trim() || "Operator";
-    profile.age = String(data.get("age") || "");
-    profile.dob = String(data.get("dob") || "");
-    profile.height = String(data.get("height") || "");
-    profile.weight = String(data.get("weight") || "");
-    profile.bodyType = String(data.get("bodyType") || "");
-    profile.diet = String(data.get("diet") || "");
-    profile.equipment = String(data.get("equipment") || "");
-    profile.goals = String(data.get("goals") || "");
-    store.onboardingComplete = true;
-    saveState();
-    render();
-    toast("Setup complete");
-  }
-
-  function bindEvents() {
-    document.addEventListener("click", function (event) {
-      const routeNode = event.target.closest ? event.target.closest("[data-route]") : null;
-      if (routeNode) { event.preventDefault(); routeTo(routeNode.getAttribute("data-route")); return; }
-      const actionNode = event.target.closest ? event.target.closest("[data-action]") : null;
-      if (actionNode) { event.preventDefault(); handleAction(actionNode); }
-    });
-    document.addEventListener("submit", function (event) {
-      const form = event.target;
-      if (!form || form.id !== "onboarding-form") return;
-      event.preventDefault();
-      submitOnboarding(form);
-    });
-    document.addEventListener("change", function (event) {
-      if (event.target && event.target.id === "import-file") applyImport(event.target.files && event.target.files.item(0));
-    });
-    window.addEventListener("hashchange", render);
-  }
-
-  registerView("dashboard", dashboard);
-  registerView("train", function () { return fallback("train", "Train", "Performance is built from repeatable sessions."); });
-  registerView("nutrition", function () { return fallback("nutrition", "Nutrition", "Record the next meal, not a perfect plan."); });
-  registerView("mind", function () { return fallback("mind", "Mind", "Protect attention before you ask it to perform."); });
-  registerView("life", function () { return fallback("life", "Life", "Build the baseline that makes every other goal easier."); });
-  registerView("squad", function () { return fallback("squad", "Squad", "Accountability is a force multiplier."); });
-  registerView("advanced", function () { return fallback("advanced", "Control room", "Your state is local-first and exportable."); });
-  registerAction("water", logWater);
-  registerAction("workout", function () { logQuick("workout", "Workout", "Quick session logged"); });
-  registerAction("meal", function () { logQuick("meal", "Meal", "Quick meal logged"); });
-  registerAction("study", function () { logQuick("study", "Study", "Focus block logged"); });
-  registerAction("habit", toggleHabit);
-  registerAction("creatine", function () { addCreatine("5g", "daily"); });
-  registerAction("export", exportState);
-  registerAction("import", importState);
-  registerAction("reset", resetState);
-
-  const api = { state: function () { return store; }, load: loadState, save: saveState, toast: toast, escape: escapeHtml, esc: escapeHtml, num: numberValue, record: record, render: render, registerView: registerView, registerAction: registerAction, awardXp: awardXp, addCreatine: addCreatine, route: routeTo, actions: actionMap, views: viewMap, source: window.LOCKED_DATA || new Object() };
-  window.app = api;
-  window.LockedIn = api;
-  window.esc = escapeHtml;
-  window.num = numberValue;
-  window.save = saveState;
-  window.toast = toast;
-  window.awardXp = awardXp;
-  window.addCreatine = addCreatine;
-  window.state = function () { return store; };
-
-  function start() {
-    store = loadState();
-    bindEvents();
-    saveState();
-    render();
-  }
-
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start, { once: true });
-  else start();
+(function(){"use strict";
+var storageKey="lockedInState";
+var viewMap=new Map();
+var actionMap=new Map();
+var store=makeState();
+var toastTimer=null;
+window.LIViews=window.LIViews||{};
+function makeState(){return {profile:{name:"Operator",age:"",dob:"",height:"",weight:"",bodyType:"",diet:"",equipment:"",goals:""},onboardingComplete:false,route:"dashboard",xp:0,streak:0,water:0,logs:new Array(),meals:new Array(),exercises:new Array(),study:new Array(),habits:new Array(),quests:new Array(),creatine:new Array(),feed:new Array(),vault:new Array(),drills:new Array()};}
+function today(){return new Date().toISOString().slice(0,10);}
+function numberValue(value,fallback){var result=Number(value);return Number.isFinite(result)?result:fallback;}
+function copyList(value){return Array.isArray(value)?value.slice():new Array();}
+function normalize(value){var source=value&&typeof value==="object"?value:new Object();var result=makeState();result.profile=Object.assign(result.profile,source.profile||new Object());result.onboardingComplete=Boolean(source.onboardingComplete);result.route=typeof source.route==="string"?source.route:"dashboard";result.xp=numberValue(source.xp,0);result.streak=numberValue(source.streak,0);result.water=numberValue(source.water,0);result.logs=copyList(source.logs);result.meals=copyList(source.meals);result.exercises=copyList(source.exercises);result.study=copyList(source.study);result.habits=copyList(source.habits);result.quests=copyList(source.quests);result.creatine=copyList(source.creatine);result.feed=copyList(source.feed);result.vault=copyList(source.vault);result.drills=copyList(source.drills);return result;}
+function loadState(){try{var raw=window.localStorage.getItem(storageKey);return normalize(raw?JSON.parse(raw):new Object());}catch(error){return makeState();}}
+function saveState(){try{window.localStorage.setItem(storageKey,JSON.stringify(store));setSaveStatus("Saved locally");}catch(error){setSaveStatus("Local save unavailable");}}
+function setSaveStatus(text){var node=document.getElementById("save-status");if(node)node.textContent=text;}
+function uniqueId(prefix){return (prefix||"id")+"-"+Date.now()+"-"+Math.random().toString(36).slice(2,8);}
+function escapeHtml(value){return String(value===null||value===undefined?"":value).split("&").join("&amp;").split("<").join("&lt;").split(">").join("&gt;").split('"').join("&quot;").split("'").join("&#39;");}
+function toast(message){var node=document.getElementById("toast");if(!node){window.alert(message);return;}node.textContent=message;node.hidden=false;window.clearTimeout(toastTimer);toastTimer=window.setTimeout(function(){node.hidden=true;},2400);}
+function addFeed(label,detail){store.feed.unshift({id:uniqueId("feed"),label:label,detail:detail||"",date:today()});store.feed=store.feed.slice(0,30);}
+function awardXp(amount,reason){var points=numberValue(amount,0);store.xp=Math.max(0,store.xp+points);if(points>0)addFeed("+"+points+" XP",reason||"Progress recorded");}
+function recordEvent(type,details){var entry=Object.assign({id:uniqueId(type),type:type,date:today(),timestamp:new Date().toISOString()},details||new Object());store.logs.unshift(entry);store.logs=store.logs.slice(0,100);return entry;}
+function completeQuest(type){var quest=store.quests.find(function(item){return item.type===type&&!item.done;});if(!quest)return;quest.done=true;awardXp(15,quest.name);}
+function record(type,details){var entry=recordEvent(type,details);awardXp(10,entry.label||type+" logged");completeQuest(type);saveState();render();return entry;}
+function metric(label,value,note){return "<div><small>"+escapeHtml(label)+"</small><strong>"+escapeHtml(value)+"</strong><small>"+escapeHtml(note)+"</small></div>";}
+function card(title,body){return "<section class=\"card\"><h2>"+escapeHtml(title)+"</h2>"+body+"</section>";}
+function hero(kicker,title,text){return "<div class=\"hero\"><div class=\"eyebrow\">"+escapeHtml(kicker)+"</div><h1>"+escapeHtml(title)+"</h1><p class=\"muted\">"+escapeHtml(text)+"</p></div>";}
+function listMarkup(items){if(!items.length)return "<p class=\"empty\">Nothing logged yet. Choose one small action.</p>";return "<div class=\"activity-list\">"+items.slice(0,8).map(function(item){return "<div class=\"activity-row\"><strong>"+escapeHtml(item.label||item.name||item.type||"Entry")+"</strong><small>"+escapeHtml(item.detail||item.date||"")+"</small></div>";}).join("")+"</div>";}
+function questMarkup(){if(!store.quests.length)store.quests=defaultQuests();return "<div class=\"activity-list\">"+store.quests.map(function(quest){return "<div class=\"activity-row\"><strong>"+(quest.done?"Done":"Open")+"</strong><small>"+escapeHtml(quest.name)+"</small></div>";}).join("")+"</div>";}
+function defaultQuests(){var list=new Array();list.push({id:"questWorkout",name:"Log a workout",type:"workout",done:false,date:today()});list.push({id:"questMeal",name:"Log a meal",type:"meal",done:false,date:today()});list.push({id:"questStudy",name:"Complete a focus block",type:"study",done:false,date:today()});return list;}
+function habitMarkup(){var names=new Array("Train or walk","2L water","Read 20 minutes","Morning skincare","No phone in bed");return "<div class=\"check-list\">"+names.map(function(name){var item=store.habits.find(function(entry){return entry.name===name;});var done=item&&item.done;return "<button class=\"check-row "+(done?"done":"")+" btn"+"\" data-action=\"habit\" data-habit=\""+escapeHtml(name)+"\"><strong>"+(done?"Done":"Open")+"</strong><span>"+escapeHtml(name)+"</span></button>";}).join("")+"</div>";}
+function quickMarkup(){return "<div class=\"action-grid\"><button class=\"btn primary\" data-action=\"water\">Log water</button><button class=\"btn\" data-action=\"workout\">Log workout</button><button class=\"btn\" data-action=\"meal\">Log meal</button><button class=\"btn\" data-action=\"study\">Log study</button><button class=\"btn\" data-action=\"weight\">Log weight</button><button class=\"btn\" data-action=\"mood\">Log mood</button></div>";}
+function chartMarkup(){var names=new Array("weight","prs","water","mood","study","streaks");return "<div class=\"chart-grid\">"+names.map(function(name){return "<section class=\"chart-card\"><div class=\"chart-heading\"><h3>"+escapeHtml(name)+"</h3><span class=\"legend\">real local data</span></div><canvas class=\"line-chart\" height=160 data-chart=\""+name+"\" title=\"Click a point for its value\"></canvas></section>";}).join("")+"</div>";}
+function dashboard(){var name=store.profile.name||"Operator";var feed=store.feed.length?store.feed:store.logs;return hero("TODAY'S OPERATING SYSTEM","Stay locked in, "+name+".","Small actions compound. Every form writes real data to this device.")+"<div class=\"metrics\">"+metric("XP",store.xp,"local progress")+metric("STREAK",store.streak,"days")+metric("WATER",store.water+"/8","glasses")+metric("LOGS",store.logs.length,"total")+"</div>"+card("Quick actions",quickMarkup())+card("Today stack",questMarkup())+card("Progress charts",chartMarkup())+card("Recent activity",listMarkup(feed))+card("Checklist",habitMarkup());}
+function fallback(route,title,text){return hero(route.toUpperCase(),title,text)+card("Module ready","<p>"+escapeHtml(text)+"</p><button class=\"btn\" data-route=\"dashboard\">Back to dashboard</button>");}
+function registerView(name,view){if(typeof view!=="function")return;viewMap.set(name,view);Object.defineProperty(window.LIViews,name,{value:view,writable:true,configurable:true,enumerable:true});}
+function registerAction(name,handler){if(typeof handler==="function")actionMap.set(name,handler);}
+function routeTo(route){window.location.hash=route||"dashboard";}
+function render(){var root=document.getElementById("app");if(!root)return;var requested=(window.location.hash||"#dashboard").slice(1)||"dashboard";var view=viewMap.get(requested)||viewMap.get("dashboard");var route=viewMap.has(requested)?requested:"dashboard";store.route=route;root.innerHTML=view(store);document.querySelectorAll("[data-route]").forEach(function(node){node.classList.toggle("active",node.getAttribute("data-route")===route);});showOnboarding();drawCharts();}
+function showOnboarding(){var node=document.getElementById("onboarding");if(node)node.hidden=Boolean(store.onboardingComplete);}
+function logWater(){store.water=Math.min(8,store.water+1);recordEvent("water",{label:"Water glass",detail:store.water+"/8 glasses",value:store.water});awardXp(5,"Hydration logged");saveState();render();toast("Hydration logged");}
+function logQuick(type,label,detail){record(type,{label:label,detail:detail});toast(label+" logged");}
+function logWeight(){var value=window.prompt("Weight in kg",store.profile.weight||"");if(value===null)return;store.profile.weight=value;record("weight",{label:"Weight",detail:value+" kg",value:numberValue(value,0)});toast("Weight logged");}
+function logMood(){var value=window.prompt("Mood from 1 to 10","7");if(value===null)return;record("mood",{label:"Mood",detail:value+"/10",value:numberValue(value,0)});}
+function toggleHabit(node){var name=node.getAttribute("data-habit");var item=store.habits.find(function(entry){return entry.name===name;});if(!item){item={name:name,done:false};store.habits.push(item);}item.done=!item.done;record("habit",{label:name,detail:item.done?"complete today":"unchecked"});}
+function exportState(){var blob=new Blob(new Array(JSON.stringify(store,null,2)),{type:"application/json"});var link=document.createElement("a");link.href=URL.createObjectURL(blob);link.download="locked-in-backup-"+today()+".json";link.click();URL.revokeObjectURL(link.href);toast("Export ready");}
+function importState(){var input=document.getElementById("import-file");if(input)input.click();}
+function resetState(){if(!window.confirm("Reset all local progress?"))return;try{window.localStorage.removeItem(storageKey);}catch(error){}store=makeState();saveState();render();toast("Local progress reset");}
+function handleAction(node){var handler=actionMap.get(node.getAttribute("data-action"));if(handler)handler(node);}
+function submitOnboarding(form){var data=new FormData(form);var profile=store.profile;profile.name=String(data.get("name")||"Operator").trim()||"Operator";profile.age=String(data.get("age")||"");profile.dob=String(data.get("dob")||"");profile.height=String(data.get("height")||"");profile.weight=String(data.get("weight")||"");profile.bodyType=String(data.get("bodyType")||"");profile.diet=String(data.get("diet")||"");profile.equipment=String(data.get("equipment")||"");profile.goals=String(data.get("goals")||"");store.onboardingComplete=true;saveState();render();toast("Setup complete");}
+function bindEvents(){document.addEventListener("click",function(event){var routeNode=event.target.closest?event.target.closest("[data-route]"):null;if(routeNode){event.preventDefault();routeTo(routeNode.getAttribute("data-route"));return;}var actionNode=event.target.closest?event.target.closest("[data-action]"):null;if(actionNode){event.preventDefault();handleAction(actionNode);}});document.addEventListener("submit",function(event){if(event.target.id!=="onboarding-form")return;event.preventDefault();submitOnboarding(event.target);});window.addEventListener("hashchange",render);}
+function valuesFor(kind){var values=new Array();store.logs.slice().reverse().forEach(function(item){if(kind==="streaks")values.push({value:numberValue(item.streak,store.streak),label:item.date});else if(kind==="water"&&item.type==="water")values.push({value:numberValue(item.value,0),label:item.date});else if(kind==="study"&&item.type==="study")values.push({value:numberValue(item.value,1),label:item.date});else if(kind==="mood"&&item.type==="mood")values.push({value:numberValue(item.value,0),label:item.date});else if(kind==="weight"&&item.type==="weight")values.push({value:numberValue(item.value,0),label:item.date});else if(kind==="prs"&&item.type==="workout")values.push({value:numberValue(item.value,store.exercises.length),label:item.date});});if(!values.length)values.push({value:kind==="streaks"?store.streak:0,label:"now"});return values.slice(-12);}
+function drawChart(canvas,kind){var context=canvas.getContext("2d");if(!context)return;var values=valuesFor(kind);var width=canvas.clientWidth||320;var height=160;var max=Math.max.apply(null,values.map(function(item){return item.value;}));max=max||1;canvas.width=width*2;canvas.height=height*2;context.scale(2,2);width=width;context.strokeStyle="#3a4650";context.lineWidth=1;context.beginPath();context.moveTo(30,10);context.lineTo(30,height-25);context.lineTo(width-8,height-25);context.stroke();context.fillStyle="#9aa6b4";context.font="10px system-ui";context.fillText("0",12,height-22);context.fillText(String(max),4,16);context.fillText(kind,34,height-8);context.strokeStyle="#8eff70";context.lineWidth=3;context.beginPath();values.forEach(function(item,index){var x=34+(width-50)*index/Math.max(1,values.length-1);var y=height-28-(height-45)*item.value/max;if(index===0)context.moveTo(x,y);else context.lineTo(x,y);context.fillStyle="#fff";context.fillText(String(item.value),x-5,y-8);});context.stroke();canvas.dataset.values=values.map(function(item){return item.value;}).join(",");canvas.onclick=function(event){var index=Math.round((event.offsetX-34)/(width-50)*Math.max(1,values.length-1));var point=values[Math.max(0,Math.min(values.length-1,index))];toast(kind+" "+point.value+" on "+point.label);};}
+function drawCharts(){document.querySelectorAll("canvas[data-chart]").forEach(function(canvas){drawChart(canvas,canvas.getAttribute("data-chart"));});}
+registerView("dashboard",dashboard);registerView("train",function(){return fallback("train","Train","Performance is built from repeatable sessions.");});registerView("nutrition",function(){return fallback("nutrition","Nutrition","Record the next meal, not a perfect plan.");});registerView("mind",function(){return fallback("mind","Mind","Protect attention before you ask it to perform.");});registerView("life",function(){return fallback("life","Life","Build the baseline that makes every other goal easier.");});registerView("squad",function(){return fallback("squad","Squad","Accountability is a force multiplier.");});registerView("advanced",function(){return fallback("advanced","Control room","Your state is local first and exportable.");});
+registerAction("water",logWater);registerAction("workout",function(){logQuick("workout","Workout","Quick session logged");});registerAction("meal",function(){logQuick("meal","Meal","Quick meal logged");});registerAction("study",function(){record("study",{label:"Study block",detail:"Focus block logged",value:1});});registerAction("weight",logWeight);registerAction("mood",logMood);registerAction("habit",toggleHabit);registerAction("export",exportState);registerAction("import",importState);registerAction("reset",resetState);
+var api={state:function(){return store;},load:loadState,save:saveState,toast:toast,escape:escapeHtml,esc:escapeHtml,num:numberValue,record:record,render:render,registerView:registerView,registerAction:registerAction,awardXp:awardXp,route:routeTo,actions:actionMap,views:viewMap,source:window.LOCKED_DATA||new Object()};window.app=api;window.LockedIn=api;window.esc=escapeHtml;window.num=numberValue;window.save=saveState;window.toast=toast;window.awardXp=awardXp;window.state=function(){return store;};
+function start(){store=loadState();if(!store.quests.length)store.quests=defaultQuests();bindEvents();saveState();render();}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",start,{once:true});else start();
 }());
