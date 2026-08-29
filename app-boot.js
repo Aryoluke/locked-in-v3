@@ -1,1 +1,18 @@
-(function(){'use strict';const app=window.app;if(!app)return;const renderView=()=>{const root=document.getElementById('app');if(!root||!app.views||typeof app.state!=='function')return;const state=app.state();const route=(location.hash||'#dashboard').slice(1);const active=app.views.has(route)?route:'dashboard';state.route=active;root.innerHTML=app.views.get(active)(state);document.querySelectorAll('[data-route]').forEach(node=>node.classList.toggle('active',node.dataset.route===active));const onboarding=document.getElementById('onboarding');if(onboarding)onboarding.hidden=Boolean(state.onboardingComplete);root.querySelectorAll('canvas.line-chart').forEach(canvas=>{let values=[];try{values=JSON.parse(canvas.dataset.values||'[]')}catch(error){values=[]}if(!values.length||!canvas.getContext)return;const width=canvas.clientWidth||500,height=200,ratio=window.devicePixelRatio||1;canvas.width=width*ratio;canvas.height=height*ratio;const ctx=canvas.getContext('2d');ctx.scale(ratio,ratio);const max=Math.max(1,...values),min=Math.min(0,...values),span=Math.max(1,max-min),x=i=>30+(width-42)*(values.length<2?0:i/(values.length-1)),y=value=>12+(height-38)*(1-(value-min)/span);ctx.strokeStyle='#33404f';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(30,height-26);ctx.lineTo(width-12,height-26);ctx.stroke();ctx.strokeStyle=canvas.dataset.colour||'#8eff70';ctx.lineWidth=3;ctx.beginPath();values.forEach((value,index)=>index?ctx.lineTo(x(index),y(value)):ctx.moveTo(x(index),y(value)));ctx.stroke();ctx.fillStyle=canvas.dataset.colour||'#8eff70';values.forEach((value,index)=>{ctx.beginPath();ctx.arc(x(index),y(value),3,0,Math.PI*2);ctx.fill()})});root.querySelectorAll('.boot-drill-link').forEach(node=>node.addEventListener('click',()=>{location.hash='#drill'}));};app.render=renderView;app.addCreatine=function(amount){const state=app.state();const value=Number(amount);state.creatine=Math.max(0,Number(state.creatine||0)+(Number.isFinite(value)?value:0));if(typeof app.save==='function')app.save();if(typeof app.toast==='function')app.toast('Creatine log saved');app.render()};if(typeof app.registerAction==='function')app.registerAction('skip-onboarding',function(){const state=app.state();state.onboardingComplete=true;if(typeof app.save==='function')app.save();const onboarding=document.getElementById('onboarding');if(onboarding)onboarding.hidden=true;app.render();if(typeof app.toast==='function')app.toast('Setup skipped — stay locked in')});document.addEventListener('click',event=>{const node=event.target.closest&&event.target.closest('[data-action]');if(!node)return;const handler=app.actions&&app.actions.get(node.dataset.action);if(typeof handler==='function'){event.preventDefault();handler(node)}});window.addEventListener('hashchange',()=>app.render());window.addEventListener('resize',()=>app.render());if(window.__lockedInReleaseBoot)window.__lockedInReleaseBoot();setTimeout(()=>app.render(),0)})();
+(function(){
+'use strict';
+function callCore(){
+  var appCore=window.app||window.LockedIn;
+  if(!appCore)return;
+  if(typeof appCore.start==='function'){appCore.start();return;}
+  if(typeof appCore.render==='function'){appCore.render();return;}
+  if(typeof appCore.state==='function')appCore.state();
+}
+function waitCore(){
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',callCore,{once:true});
+    return;
+  }
+  callCore();
+}
+waitCore();
+}());
