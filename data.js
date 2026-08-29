@@ -1,108 +1,191 @@
-Y29uc3QgRVhFUkNJU0VfT0JKRUNUUyA9IFsKICB7CiAgICBuYW1lOiAnSW5j
-bGluZSBEQiBQcmVzcycsIG11c2NsZTogJ0NoZXN0JywgcGF0dGVybjogJ1B1
-c2gnLAogICAgdmFyaWF0aW9uOiAnTG93IGluY2xpbmUsIG5ldXRyYWwtZ3Jp
-cCBkdW1iYmVsbCBwcmVzcycsCiAgICBmb3JtQ3VlczogWydTZXQgc2hvdWxk
-ZXIgYmxhZGVzIGRvd24gYW5kIGJhY2snLCAnTG93ZXIgd2l0aCBlbGJvd3Mg
-MzDigJM0NcKwIGZyb20geW91ciByaWJzJywgJ1ByZXNzIHVwIHdpdGhvdXQg
-bGV0dGluZyB0aGUgZHVtYmJlbGxzIGRyaWZ0IHRvZ2V0aGVyJ10sCiAgICB0
-YXJnZXRNdXNjbGVzOiBbJ1VwcGVyIGNoZXN0JywgJ0Zyb250IGRlbHRzJywg
-J1RyaWNlcHMnXSwKICAgIGRlbW9Ob3RlOiAnS2VlcCBib3RoIGZlZXQgcGxh
-bnRlZCBhbmQgdXNlIGEgY29udHJvbGxlZCB0d28tc2Vjb25kIGxvd2VyLicK
-ICB9LAogIHsKICAgIG5hbWU6ICdCYWNrIFNxdWF0JywgbXVzY2xlOiAnUXVh
-ZHMnLCBwYXR0ZXJuOiAnU3F1YXQnLAogICAgdmFyaWF0aW9uOiAnSGlnaC1i
-YXIgYmFjayBzcXVhdCB0byBhIGNvbWZvcnRhYmxlIGRlcHRoJywKICAgIGZv
-cm1DdWVzOiBbJ0JyYWNlIGJlZm9yZSB1bnJhY2tpbmcnLCAnVHJhY2sga25l
-ZXMgb3ZlciB0aGUgbWlkZGxlIHRvZXMnLCAnRHJpdmUgdXAgdGhyb3VnaCB0
-aGUgd2hvbGUgZm9vdCddLAogICAgdGFyZ2V0TXVzY2xlczogWydRdWFkcycs
-ICdHbHV0ZXMnLCAnQWRkdWN0b3JzJ10sCiAgICBkZW1vTm90ZTogJ0ZpbG0g
-ZnJvbSB0aGUgc2lkZSB0byBjaGVjayBkZXB0aCBhbmQgYSBuZXV0cmFsIHRv
-cnNvLicKICB9LAogIHsKICAgIG5hbWU6ICdSb21hbmlhbiBEZWFkbGlmdCcs
-IG11c2NsZTogJ0hhbXN0cmluZ3MnLCBwYXR0ZXJuOiAnSGluZ2UnLAogICAg
-dmFyaWF0aW9uOiAnRHVtYmJlbGwgb3IgYmFyYmVsbCBSb21hbmlhbiBkZWFk
-bGlmdCcsCiAgICBmb3JtQ3VlczogWydVbmxvY2sgdGhlIGtuZWVzIHNsaWdo
-dGx5JywgJ1B1c2ggaGlwcyBiYWNrIHdoaWxlIGtlZXBpbmcgdGhlIGxvYWQg
-Y2xvc2UnLCAnU3RvcCB3aGVuIHRoZSBoYW1zdHJpbmdzIGFyZSBsb2FkZWQg
-d2l0aG91dCByb3VuZGluZyddLAogICAgdGFyZ2V0TXVzY2xlczogWydIYW1z
-dHJpbmdzJywgJ0dsdXRlcycsICdTcGluYWwgZXJlY3RvcnMnXSwKICAgIGRl
-bW9Ob3RlOiAnVGhpbmsgbG9uZyBzcGluZSBhbmQgcXVpZXQgc2hpbnMgcmF0
-aGVyIHRoYW4gcmVhY2hpbmcgZm9yIHRoZSBmbG9vci4nCiAgfSwKICB7CiAg
-ICBuYW1lOiAnUHVsbCBVcCcsIG11c2NsZTogJ0JhY2snLCBwYXR0ZXJuOiAn
-UHVsbCcsCiAgICB2YXJpYXRpb246ICdTdHJpY3QgcHVsbC11cCB3aXRoIGEg
-c2hvdWxkZXItd2lkdGggZ3JpcCcsCiAgICBmb3JtQ3VlczogWydTdGFydCBm
-cm9tIGFuIGFjdGl2ZSBoYW5nJywgJ1B1bGwgZWxib3dzIHRvd2FyZCB5b3Vy
-IHNpZGVzJywgJ0NsZWFyIHRoZSBiYXIgd2l0aG91dCBjcmFuaW5nIHlvdXIg
-bmVjayddLAogICAgdGFyZ2V0TXVzY2xlczogWydMYXRzJywgJ1VwcGVyIGJh
-Y2snLCAnQmljZXBzJ10sCiAgICBkZW1vTm90ZTogJ1VzZSBhIGJhbmQgb3Ig
-bG93IGJveCBmb3Igc21vb3RoIGZ1bGwtcmFuZ2UgcmVwcyB3aGlsZSBidWls
-ZGluZyBzdHJlbmd0aC4nCiAgfSwKICB7CiAgICBuYW1lOiAnQ2FibGUgTGF0
-ZXJhbCBSYWlzZScsIG11c2NsZTogJ1Nob3VsZGVycycsIHBhdHRlcm46ICdQ
-dXNoJywKICAgIHZhcmlhdGlvbjogJ1NpbmdsZS1hcm0gY2FibGUgbGF0ZXJh
-bCByYWlzZScsCiAgICBmb3JtQ3VlczogWydTZXQgdGhlIGNhYmxlIGp1c3Qg
-YmVoaW5kIHlvdScsICdMZWFkIHdpdGggdGhlIGVsYm93JywgJ1N0b3AgYXJv
-dW5kIHNob3VsZGVyIGhlaWdodCddLAogICAgdGFyZ2V0TXVzY2xlczogWydM
-YXRlcmFsIGRlbHRzJywgJ1N1cHJhc3BpbmF0dXMnXSwKICAgIGRlbW9Ob3Rl
-OiAnVXNlIGEgbGlnaHQgbG9hZCBhbmQga2VlcCB0aGUgdG9yc28gc3RpbGwg
-aW5zdGVhZCBvZiBzd2luZ2luZy4nCiAgfSwKICB7CiAgICBuYW1lOiAnUGxh
-bmsnLCBtdXNjbGU6ICdDb3JlJywgcGF0dGVybjogJ0JyYWNlJywKICAgIHZh
-cmlhdGlvbjogJ0xvbmctbGV2ZXIgZm9yZWFybSBwbGFuaycsCiAgICBmb3Jt
-Q3VlczogWydTcXVlZXplIGdsdXRlcyBhbmQgcXVhZHMnLCAnUmlicyBkb3du
-IHdpdGggYSBzdGVhZHkgYnJlYXRoJywgJ1B1c2ggdGhlIGZsb29yIGF3YXkn
-XSwKICAgIHRhcmdldE11c2NsZXM6IFsnQWJkb21pbmFscycsICdPYmxpcXVl
-cycsICdHbHV0ZXMnXSwKICAgIGRlbW9Ob3RlOiAnRW5kIHRoZSBzZXQgd2hl
-biB0aGUgaGlwcyBzYWcgb3IgdGhlIGJyZWF0aCBiZWNvbWVzIGZvcmNlZC4n
-CiAgfSwKICB7CiAgICBuYW1lOiAnRGVhZCBIYW5nJywgbXVzY2xlOiAnR3Jp
-cCcsIHBhdHRlcm46ICdIYW5nJywKICAgIHZhcmlhdGlvbjogJ0FjdGl2ZSBv
-ciByZWxheGVkIGJhciBoYW5nJywKICAgIGZvcm1DdWVzOiBbJ1VzZSBhIHNl
-Y3VyZSBvdmVyaGFuZCBncmlwJywgJ0tlZXAgc2hvdWxkZXJzIGNvbWZvcnRh
-YmxlJywgJ0Rpc21vdW50IHVuZGVyIGNvbnRyb2wnXSwKICAgIHRhcmdldE11
-c2NsZXM6IFsnRm9yZWFybXMnLCAnR3JpcCcsICdTaG91bGRlciBzdGFiaWxp
-c2VycyddLAogICAgZGVtb05vdGU6ICdTdGFydCB3aXRoIGZlZXQtYXNzaXN0
-ZWQgaG9sZHMgaWYgdGhlIHNob3VsZGVycyBvciBlbGJvd3MgYXJlIHNlbnNp
-dGl2ZS4nCiAgfSwKICB7CiAgICBuYW1lOiAnQmVuY2ggUHJlc3MnLCBtdXNj
-bGU6ICdDaGVzdCcsIHBhdHRlcm46ICdQdXNoJywKICAgIHZhcmlhdGlvbjog
-J1BhdXNlZCBiYXJiZWxsIGJlbmNoIHByZXNzJywKICAgIGZvcm1DdWVzOiBb
-J1B1bGwgdGhlIGJhciBvdmVyIHRoZSBtaWQtY2hlc3QnLCAnS2VlcCB3cmlz
-dHMgc3Rhd2tlZCBvdmVyIGVsYm93cycsICdQYXVzZSBsaWdodGx5IHdpdGhv
-dXQgcmVsYXhpbmcgdGhlIGJyYWNlJ10sCiAgICB0YXJnZXRNdXNjbGVzOiBb
-J0NoZXN0JywgJ1RyaWNlcHMnLCAnRnJvbnQgZGVsdHMnXSwKICAgIGRlbW9O
-b3RlOiAnVXNlIGEgc3BvdHRlciBvciBzYWZldHkgYXJtcyBmb3IgZXZlcnkg
-Y2hhbGxlbmdpbmcgc2V0LicKICB9LAogIHsKICAgIG5hbWU6ICdCdWxnYXJp
-YW4gU3BsaXQgU3F1YXQnLCBtdXNjbGU6ICdMZWdzJywgcGF0dGVybjogJ0x1
-bmdlJywKICAgIHZhcmlhdGlvbjogJ0Zyb250LWZvb3QtZWxldmF0ZWQgc3Bs
-aXQgc3F1YXQnLAogICAgZm9ybUN1ZXM6IFsnRmluZCBhIHN0YWJsZSBzdGFu
-Y2UgYmVmb3JlIGxvYWRpbmcnLCAnTGV0IHRoZSBmcm9udCBrbmVlIHRyYXZl
-bCBuYXR1cmFsbHknLCAnS2VlcCB0aGUgcGVsdmlzIGZhY2luZyBmb3J3YXJk
-J10sCiAgICB0YXJnZXRNdXNjbGVzOiBbJ1F1YWRzJywgJ0dsdXRlcycsICdB
-ZGR1Y3RvcnMnXSwKICAgIGRlbW9Ob3RlOiAnSG9sZCBvbnRvIGEgcmFjayB3
-aGlsZSBsZWFybmluZyBiYWxhbmNlLCB0aGVuIGFkZCBsb2FkIGdyYWR1YWxs
-eS4nCiAgfSwKICB7CiAgICBuYW1lOiAnU2VhdGVkIENhYmxlIFJvdycsIG11
-c2NsZTogJ0JhY2snLCBwYXR0ZXJuOiAnUHVsbCcsCiAgICB2YXJpYXRpb246
-ICdOZXV0cmFsLWdyaXAgc2VhdGVkIGNhYmxlIHJvdycsCiAgICBmb3JtQ3Vl
-czogWydSZWFjaCB3aXRob3V0IGNvbGxhcHNpbmcgdGhlIGxvd2VyIGJhY2sn
-LCAnUHVsbCBoYW5kbGUgdG8gdGhlIGxvd2VyIHJpYnMnLCAnRmluaXNoIHdp
-dGggc2hvdWxkZXIgYmxhZGVzIG1vdmluZywgbm90IHNocnVnZ2luZyddLAog
-ICAgdGFyZ2V0TXVzY2xlczogWydNaWQtYmFjaycsICdMYXRzJywgJ1JlYXIg
-ZGVsdHMnXSwKICAgIGRlbW9Ob3RlOiAnUGF1c2UgYXQgdGhlIHJpYnMgYW5k
-IGtlZXAgdGhlIHJldHVybiBzbG93ZXIgdGhhbiB0aGUgcHVsbC4nCiAgfSwK
-ICB7CiAgICBuYW1lOiAnUHVzaCBVcCcsIG11c2NsZTogJ0NoZXN0JywgcGF0
-dGVybjogJ1B1c2gnLAogICAgdmFyaWF0aW9uOiAnSGFuZHMtZWxldmF0ZWQg
-dG8gZmxvb3IgcHVzaC11cCBwcm9ncmVzc2lvbicsCiAgICBmb3JtQ3Vlczog
-WydLZWVwIGhhbmRzIGp1c3Qgb3V0c2lkZSBzaG91bGRlciB3aWR0aCcsICdC
-cmFjZSBmcm9tIHNob3VsZGVycyB0aHJvdWdoIGhlZWxzJywgJ0xvd2VyIGNo
-ZXN0IGFuZCBoaXBzIHRvZ2V0aGVyJ10sCiAgICB0YXJnZXRNdXNjbGVzOiBb
-J0NoZXN0JywgJ1RyaWNlcHMnLCAnU2VycmF0dXMnXSwKICAgIGRlbW9Ob3Rl
-OiAnUmFpc2UgdGhlIGhhbmRzIHRvIGtlZXAgY2xlYW4gcmVwcyBpbnN0ZWFk
-IG9mIHNob3J0ZW5pbmcgdGhlIHJhbmdlLicKICB9LAogIHsKICAgIG5hbWU6
-ICdIaXAgVGhydXN0JywgbXVzY2xlOiAnR2x1dGVzJywgcGF0dGVybjogJ0hp
-bmdlJywKICAgIHZhcmlhdGlvbjogJ0JlbmNoLXN1cHBvcnRlZCBiYXJiZWxs
-IGhpcCB0aHJ1c3QnLAogICAgZm9ybUN1ZXM6IFsnVHVjayB0aGUgY2hpbiBz
-bGlnaHRseScsICdGaW5pc2ggd2l0aCByaWJzIHN0YWNrZWQgb3ZlciBwZWx2
-aXMnLCAnUGF1c2UgYXQgZnVsbCBoaXAgZXh0ZW5zaW9uJ10sCiAgICB0YXJn
-ZXRNdXNjbGVzOiBbJ0dsdXRlIG1heCcsICdIYW1zdHJpbmdzJywgJ0FkZHVj
-dG9ycyddLAogICAgZGVtb05vdGU6ICdVc2UgYSBwYWQgYW5kIGtlZXAgdGhl
-IHRvcCBwb3NpdGlvbiBjb250cm9sbGVkIHJhdGhlciB0aGFuIGh5cGVyZXh0
-ZW5kaW5nLicKICB9Cl07CgovLyBMZWdhY3kgY29uc3VtZXJzIHVzZSBleGVy
-Y2lzZXMgYXMgW25hbWUsIG11c2NsZSwgcGF0dGVybl0uIEtlZXAgdGhhdCBz
-aGFwZSB3aGlsZQovLyBhdHRhY2hpbmcgdGhlIHJpY2hlciBmaWVsZHMgYW5k
-IGV4cG9zaW5nIHRoZSBwbGFpbiBleGVyY2lzZSBvYmplY3RzIGJlbG93Lgpj
-b25zdCBMRUdBQ1lfRVhFUkNJU0VTI =
+const EXERCISE_OBJECTS = [
+  {
+    name: 'Incline DB Press', muscle: 'Chest', pattern: 'Push',
+    variation: 'Low incline, neutral-grip dumbbell press',
+    formCues: ['Set shoulder blades down and back', 'Lower with elbows 30–45° from your ribs', 'Press up without letting the dumbbells drift together'],
+    targetMuscles: ['Upper chest', 'Front delts', 'Triceps'],
+    demoNote: 'Keep both feet planted and use a controlled two-second lower.'
+  },
+  {
+    name: 'Back Squat', muscle: 'Quads', pattern: 'Squat',
+    variation: 'High-bar back squat to a comfortable depth',
+    formCues: ['Brace before unracking', 'Track knees over the middle toes', 'Drive up through the whole foot'],
+    targetMuscles: ['Quads', 'Glutes', 'Adductors'],
+    demoNote: 'Film from the side to check depth and a neutral torso.'
+  },
+  {
+    name: 'Romanian Deadlift', muscle: 'Hamstrings', pattern: 'Hinge',
+    variation: 'Dumbbell or barbell Romanian deadlift',
+    formCues: ['Unlock the knees slightly', 'Push hips back while keeping the load close', 'Stop when the hamstrings are loaded without rounding'],
+    targetMuscles: ['Hamstrings', 'Glutes', 'Spinal erectors'],
+    demoNote: 'Think long spine and quiet shins rather than reaching for the floor.'
+  },
+  {
+    name: 'Pull Up', muscle: 'Back', pattern: 'Pull',
+    variation: 'Strict pull-up with a shoulder-width grip',
+    formCues: ['Start from an active hang', 'Pull elbows toward your sides', 'Clear the bar without craning your neck'],
+    targetMuscles: ['Lats', 'Upper back', 'Biceps'],
+    demoNote: 'Use a band or low box for smooth full-range reps while building strength.'
+  },
+  {
+    name: 'Cable Lateral Raise', muscle: 'Shoulders', pattern: 'Push',
+    variation: 'Single-arm cable lateral raise',
+    formCues: ['Set the cable just behind you', 'Lead with the elbow', 'Stop around shoulder height'],
+    targetMuscles: ['Lateral delts', 'Supraspinatus'],
+    demoNote: 'Use a light load and keep the torso still instead of swinging.'
+  },
+  {
+    name: 'Plank', muscle: 'Core', pattern: 'Brace',
+    variation: 'Long-lever forearm plank',
+    formCues: ['Squeeze glutes and quads', 'Ribs down with a steady breath', 'Push the floor away'],
+    targetMuscles: ['Abdominals', 'Obliques', 'Glutes'],
+    demoNote: 'End the set when the hips sag or the breath becomes forced.'
+  },
+  {
+    name: 'Dead Hang', muscle: 'Grip', pattern: 'Hang',
+    variation: 'Active or relaxed bar hang',
+    formCues: ['Use a secure overhand grip', 'Keep shoulders comfortable', 'Dismount under control'],
+    targetMuscles: ['Forearms', 'Grip', 'Shoulder stabilisers'],
+    demoNote: 'Start with feet-assisted holds if the shoulders or elbows are sensitive.'
+  },
+  {
+    name: 'Bench Press', muscle: 'Chest', pattern: 'Push',
+    variation: 'Paused barbell bench press',
+    formCues: ['Pull the bar over the mid-chest', 'Keep wrists stacked over elbows', 'Pause lightly without relaxing the brace'],
+    targetMuscles: ['Chest', 'Triceps', 'Front delts'],
+    demoNote: 'Use a spotter or safety arms for every challenging set.'
+  },
+  {
+    name: 'Bulgarian Split Squat', muscle: 'Legs', pattern: 'Lunge',
+    variation: 'Front-foot-elevated split squat',
+    formCues: ['Find a stable stance before loading', 'Let the front knee travel naturally', 'Keep the pelvis facing forward'],
+    targetMuscles: ['Quads', 'Glutes', 'Adductors'],
+    demoNote: 'Hold onto a rack while learning balance, then add load gradually.'
+  },
+  {
+    name: 'Seated Cable Row', muscle: 'Back', pattern: 'Pull',
+    variation: 'Neutral-grip seated cable row',
+    formCues: ['Reach without collapsing the lower back', 'Pull handle to the lower ribs', 'Finish with shoulder blades moving, not shrugging'],
+    targetMuscles: ['Mid-back', 'Lats', 'Rear delts'],
+    demoNote: 'Pause at the ribs and keep the return slower than the pull.'
+  },
+  {
+    name: 'Push Up', muscle: 'Chest', pattern: 'Push',
+    variation: 'Hands-elevated to floor push-up progression',
+    formCues: ['Keep hands just outside shoulder width', 'Brace from shoulders through heels', 'Lower chest and hips together'],
+    targetMuscles: ['Chest', 'Triceps', 'Serratus'],
+    demoNote: 'Raise the hands to keep clean reps instead of shortening the range.'
+  },
+  {
+    name: 'Hip Thrust', muscle: 'Glutes', pattern: 'Hinge',
+    variation: 'Bench-supported barbell hip thrust',
+    formCues: ['Tuck the chin slightly', 'Finish with ribs stacked over pelvis', 'Pause at full hip extension'],
+    targetMuscles: ['Glute max', 'Hamstrings', 'Adductors'],
+    demoNote: 'Use a pad and keep the top position controlled rather than hyperextending.'
+  }
+];
+
+// Legacy consumers use exercises as [name, muscle, pattern]. Keep that shape while
+// attaching the richer fields and exposing the plain exercise objects below.
+const LEGACY_EXERCISES = EXERCISE_OBJECTS.map(exercise => Object.assign(
+  [exercise.name, exercise.muscle, exercise.pattern],
+  exercise
+));
+
+const LI_DATA = {
+  exercises: LEGACY_EXERCISES,
+  exerciseDetails: EXERCISE_OBJECTS,
+  workouts: [
+    { name: 'Upper strength', duration: 52, items: ['Incline DB Press', 'Pull Up', 'Cable Lateral Raise'] },
+    { name: 'Lower strength', duration: 48, items: ['Back Squat', 'Romanian Deadlift', 'Plank'] },
+    { name: 'Athletic reset', duration: 25, items: ['Plank', 'Dead Hang'] },
+    { name: 'Full-body minimum', duration: 30, items: ['Goblet Squat', 'Push Up', 'Seated Cable Row', 'Dead Hang'] }
+  ],
+  meals: [
+    ['Protein oats', 520, 38, 58, 16],
+    ['Chicken rice bowl', 680, 52, 74, 18],
+    ['Greek yoghurt crunch', 310, 25, 31, 9],
+    ['Green recovery smoothie', 280, 24, 35, 6],
+    ['Tuna bean jacket potato', 560, 42, 63, 12],
+    ['Turkey pesto pasta', 640, 48, 70, 17],
+    ['Tofu noodle stir-fry', 470, 28, 58, 15],
+    ['Egg and bean breakfast wrap', 450, 29, 44, 18],
+    ['Cottage cheese berry bowl', 290, 27, 28, 8]
+  ],
+  subjects: ['Maths', 'Biology', 'History', 'Language', 'Physics'],
+  habits: ['Train or walk', '2L water', 'Read 20 minutes', 'Morning skincare', 'No phone in bed', 'Brush + floss'],
+  skills: ['Muscle-up', 'Front lever', 'Planche', 'One-arm pull-up', '100kg bench', 'Dead hang'],
+  skillProgressions: [
+    { skill: 'Muscle-up', steps: ['Scapular pull-up and hollow hang', 'Chest-to-bar pull-up', 'Low-ring transition drill', 'Band-assisted strict muscle-up', 'Strict bar muscle-up'], frequency: '2–3 sessions/week', benchmark: '3 controlled reps with no kip' },
+    { skill: 'Front lever', steps: ['Tuck hold', 'Advanced tuck hold', 'One-leg tuck', 'Straddle hold', 'Full front lever'], frequency: '2–3 sessions/week', benchmark: '10-second hold with straight hips' },
+    { skill: 'Planche', steps: ['Planche lean', 'Frog stand', 'Tuck planche', 'Advanced tuck planche', 'Straddle planche'], frequency: '2 sessions/week', benchmark: '8-second hold with locked elbows' },
+    { skill: 'One-arm pull-up', steps: ['Active one-arm hang', 'Archer pull-up', 'Assisted one-arm eccentric', 'Isometric top and middle holds', 'Strict one-arm pull-up'], frequency: '2 sessions/week', benchmark: '5-second controlled eccentric each arm' },
+    { skill: '100kg bench', steps: ['Consistent paused technique', '70kg for clean volume', '80kg for 5 reps', '90kg for 2 reps', '100kg single'], frequency: '2 bench exposures/week', benchmark: 'One smooth, judged-quality 100kg rep' },
+    { skill: 'Dead hang', steps: ['Feet-assisted hang', '20-second relaxed hang', '30-second active hang', '45-second mixed-grip-free hang', '60-second active hang'], frequency: '3–5 short practices/week', benchmark: '60 seconds with shoulders comfortable' }
+  ],
+  hacks: [
+    ['Focus', 'Two-minute launch', 'Set a timer for two minutes and begin the smallest visible action before deciding whether to continue.'],
+    ['Focus', 'Single-task staging', 'Leave only the tool for the next task on the desk; put everything else out of reach.'],
+    ['Social', 'FORD questions', 'Use Family, Occupation, Recreation and Dreams to keep conversations curious and easy.'],
+    ['Style', 'Fit before labels', 'Prioritise shoulder seams, trouser break and clean shoes; tailoring beats a louder label.'],
+    ['Home', 'Ten-percent reset', 'Before leaving a room, return one surface or item to a slightly better state.'],
+    ['Confidence', 'Slow finish', 'Slow down your speech and finish each sentence before planning the next one.'],
+    ['Study', 'Recall first', 'Close the notes and write what you remember before checking the answer.'],
+    ['Recovery', 'Friction audit', 'Put water, walking shoes and tomorrow’s training clothes where you will see them.']
+  ],
+  vault: [
+    ['Focus', 'Use the 2-minute rule. Start before motivation arrives.'],
+    ['Social', 'FORD questions: Family, Occupation, Recreation, Dreams.'],
+    ['Style', 'Fit first; tailoring beats labels every time.'],
+    ['Home', 'Reset surfaces and leave each room 10% better.'],
+    ['Confidence', 'Slow down your speech and finish your sentences.']
+  ],
+  sports: ['Rugby', 'Football', 'Tennis', 'Swimming', 'Cricket', 'Hockey', 'Athletics', 'Basketball', 'Volleyball', 'Boxing', 'Cycling', 'Rowing', 'Climbing'],
+  sportProfiles: [
+    { sport: 'Rugby', focus: 'Repeat sprint ability, contact readiness and lower-body strength', starter: '2 strength sessions plus short acceleration work' },
+    { sport: 'Football', focus: 'Aerobic repeatability, change of direction and single-leg control', starter: 'Intervals, split squats and ankle mobility' },
+    { sport: 'Tennis', focus: 'Rotational power, footwork and shoulder resilience', starter: 'Lateral drills, medicine-ball throws and pulling volume' },
+    { sport: 'Swimming', focus: 'Technique, aerobic capacity and shoulder mobility', starter: 'Easy technique lengths with gradual volume' },
+    { sport: 'Cricket', focus: 'Throwing capacity, sprinting and trunk rotation', starter: 'Build shoulder volume slowly and add short sprints' },
+    { sport: 'Hockey', focus: 'Repeated efforts, lateral movement and hip mobility', starter: 'Shuttle intervals plus adductor and calf strength' },
+    { sport: 'Athletics', focus: 'Event-specific speed, elastic strength and technical practice', starter: 'Choose one event and keep quality ahead of volume' },
+    { sport: 'Basketball', focus: 'Jump skill, deceleration and repeated sprint ability', starter: 'Landing mechanics, calf strength and short court intervals' },
+    { sport: 'Volleyball', focus: 'Approach mechanics, shoulder control and reactive movement', starter: 'Low-volume jumps with landing and rotator-cuff work' },
+    { sport: 'Boxing', focus: 'Footwork, conditioning and trunk stiffness', starter: 'Technical shadowboxing before adding hard rounds' },
+    { sport: 'Cycling', focus: 'Aerobic base, cadence and sustained leg output', starter: 'Mostly easy rides with one controlled effort session' },
+    { sport: 'Rowing', focus: 'Leg drive, trunk sequencing and aerobic power', starter: 'Short technique intervals before longer pieces' },
+    { sport: 'Climbing', focus: 'Grip endurance, scapular control and movement efficiency', starter: 'Easy mileage plus antagonist pushing work' }
+  ],
+  recipes: ['One-pan lemon chicken', 'High-protein chilli', 'Overnight oats', 'Green recovery smoothie', 'Tuna bean jacket potato', 'Turkey pesto pasta', 'Tofu noodle stir-fry', 'Egg and bean breakfast wrap', 'Cottage cheese berry bowl', 'Salmon tray bake', 'Lentil tomato soup', 'Chicken fajita salad'],
+  recipeDetails: [
+    { name: 'One-pan lemon chicken', prepMinutes: 10, cookMinutes: 25, ingredients: ['chicken breast', 'baby potatoes', 'green beans', 'lemon', 'olive oil'], steps: ['Season chicken and potatoes', 'Roast until nearly tender', 'Add beans and finish until chicken is cooked through'], tags: ['high-protein', 'batch-friendly'] },
+    { name: 'High-protein chilli', prepMinutes: 10, cookMinutes: 30, ingredients: ['lean mince or soy mince', 'kidney beans', 'tomatoes', 'onion', 'paprika'], steps: ['Brown the mince and onion', 'Add beans, tomatoes and spices', 'Simmer until thick'], tags: ['freezer-friendly', 'high-fibre'] },
+    { name: 'Overnight oats', prepMinutes: 5, cookMinutes: 0, ingredients: ['oats', 'Greek yoghurt', 'milk', 'berries', 'chia seeds'], steps: ['Mix in a jar', 'Chill overnight', 'Add fruit before eating'], tags: ['breakfast', 'no-cook'] },
+    { name: 'Green recovery smoothie', prepMinutes: 5, cookMinutes: 0, ingredients: ['milk', 'banana', 'spinach', 'Greek yoghurt', 'frozen berries'], steps: ['Blend until smooth', 'Add liquid to adjust texture', 'Drink soon after training'], tags: ['quick', 'post-training'] },
+    { name: 'Tuna bean jacket potato', prepMinutes: 8, cookMinutes: 45, ingredients: ['potato', 'tuna', 'white beans', 'yoghurt', 'spring onion'], steps: ['Bake or microwave the potato', 'Mix tuna and beans with yoghurt', 'Split and fill the potato'], tags: ['budget', 'high-protein'] },
+    { name: 'Turkey pesto pasta', prepMinutes: 10, cookMinutes: 15, ingredients: ['turkey mince', 'wholewheat pasta', 'pesto', 'cherry tomatoes', 'spinach'], steps: ['Cook pasta', 'Brown turkey', 'Toss everything together with tomatoes and spinach'], tags: ['batch-friendly', 'balanced'] },
+    { name: 'Tofu noodle stir-fry', prepMinutes: 12, cookMinutes: 10, ingredients: ['firm tofu', 'rice noodles', 'frozen mixed vegetables', 'soy sauce', 'lime'], steps: ['Press and crisp tofu', 'Soften noodles', 'Stir-fry vegetables and combine'], tags: ['vegetarian', 'quick'] },
+    { name: 'Egg and bean breakfast wrap', prepMinutes: 5, cookMinutes: 8, ingredients: ['eggs', 'black beans', 'wholegrain wrap', 'salsa', 'cheese'], steps: ['Scramble eggs', 'Warm beans and wrap', 'Fill, fold and toast'], tags: ['breakfast', 'portable'] },
+    { name: 'Cottage cheese berry bowl', prepMinutes: 4, cookMinutes: 0, ingredients: ['cottage cheese', 'berries', 'oats', 'honey', 'pumpkin seeds'], steps: ['Add cottage cheese to a bowl', 'Top with berries and oats', 'Finish with seeds and honey'], tags: ['snack', 'no-cook'] },
+    { name: 'Salmon tray bake', prepMinutes: 8, cookMinutes: 22, ingredients: ['salmon', 'sweet potato', 'broccoli', 'lemon', 'dill'], steps: ['Roast sweet potato first', 'Add salmon and broccoli', 'Finish with lemon and dill'], tags: ['omega-3', 'one-pan'] },
+    { name: 'Lentil tomato soup', prepMinutes: 8, cookMinutes: 25, ingredients: ['red lentils', 'tinned tomatoes', 'carrot', 'stock', 'cumin'], steps: ['Soften carrot', 'Add lentils, tomatoes and stock', 'Simmer until soft and season'], tags: ['vegetarian', 'freezer-friendly'] },
+    { name: 'Chicken fajita salad', prepMinutes: 12, cookMinutes: 12, ingredients: ['chicken', 'peppers', 'lettuce', 'corn', 'lime yoghurt'], steps: ['Cook spiced chicken and peppers', 'Build the salad base', 'Top with corn and lime yoghurt'], tags: ['high-protein', 'fresh'] }
+  ],
+  products: [
+    { name: 'Adjustable dumbbells', category: 'training', use: 'Progressive full-body strength at home', practicalNote: 'Choose a range that supports both presses and rows without sacrificing form.' },
+    { name: 'Door-frame pull-up bar', category: 'training', use: 'Pull-ups, hangs and skill practice', practicalNote: 'Check the frame rating and installation instructions before loading it.' },
+    { name: 'Long resistance band', category: 'training', use: 'Assisted pull-ups, warm-ups and mobility', practicalNote: 'Inspect for tears and keep the anchor point secure.' },
+    { name: 'Skipping rope', category: 'conditioning', use: 'Short-footwork and conditioning blocks', practicalNote: 'Start with easy intervals and a forgiving surface.' },
+    { name: 'Food scale', category: 'nutrition', use: 'Consistent portions while learning serving sizes', practicalNote: 'Use it as a short-term learning tool, not a requirement for every meal.' },
+    { name: 'Insulated water bottle', category: 'recovery', use: 'Make regular hydration visible and portable', practicalNote: 'Mark a refill target so the 2L habit is easy to audit.' },
+    { name: 'Massage ball', category: 'recovery', use: 'Gentle local tissue work before mobility', practicalNote: 'Use comfortable pressure and avoid painful or numb areas.' },
+    { name: 'Training notebook', category: 'tracking', use: 'Log sets, reps, RPE and one form cue', practicalNote: 'Record the next action immediately after each session.' },
+    { name: 'Foam roller', category: 'recovery', use: 'Warm-up movement and relaxed cooldown work', practicalNote: 'Pair it with active mobility rather than treating it as a fix.' },
+    { name: 'Lifting straps', category: 'training', use: 'Extra pulling volume when grip is the limiter', practicalNote: 'Keep direct grip work in the plan if grip is a goal.' }
+  ],
+  challenges: ['7-day hydration', '30-day posture', 'Cold finish', 'Digital sunset', 'Public speaking reps']
+};
+
+// data.js historically exposed LI_DATA; keep it and also provide the browser global
+// consumed by the v3 app when this file is loaded before the app modules.
+if (typeof window !== 'undefined') window.LOCKED_DATA = LI_DATA;
