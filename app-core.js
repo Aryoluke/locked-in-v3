@@ -1,3 +1,482 @@
-(function(){'use strict';var KEY='locked-in-v3-state',source=window.LOCKED_DATA||{},defaults={profile:{name:'Operator',goal:'strength, confidence, consistency',sex:'male',age:25,height:175,weight:75,activity:1.55},onboardingComplete:false,route:'dashboard',xp:0,streak:0,water:0,logs:[],meals:[],exercises:[],templates:[],measurements:[],bodyScans:[],goals:[],habits:{},recipes:[],plans:[],groceries:[],supplements:[],focus:[],study:[],moods:[],journal:[],screenTime:[],lifeSkills:[],skincare:[],scars:[],schedule:[],squad:{quests:[],freezes:0,shop:[],friends:[],duels:[],reactions:[],badges:[],trophies:[],photos:[],sessions:[],leagues:[],raids:[],combos:0},competitions:[],rankings:[],runs:[],arcs:[],glowup:[],reminders:[],notifications:[],privacy:{analytics:false,lock:false},settings:{compact:false}},state=read(),views={},domains={},timer={focus:0,rest:0,fast:null};function merge(a,b){var o={},k;Object.keys(a).forEach(function(k){var v=a[k];o[k]=v&&typeof v==='object'&&!Array.isArray(v)?merge(v,{}):Array.isArray(v)?v.slice():v});Object.keys(b||{}).forEach(function(k){var v=b[k];o[k]=v&&typeof v==='object'&&!Array.isArray(v)?merge(o[k]||{},v):v});return o}function read(){try{return merge(defaults,JSON.parse(localStorage.getItem(KEY)||'null')||{})}catch(e){return merge(defaults,{})}}function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}var x=document.getElementById('save-status');if(x)x.textContent='Saved locally · '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]})}function uid(p){return(p||'id')+'-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7)}function day(){return new Date().toISOString().slice(0,10)}function num(v,d){var x=Number(v);return isFinite(x)?x:(d||0)}function val(f,k){return new FormData(f).get(k)}function toast(s){var x=document.getElementById('toast');if(!x)return;x.textContent=s;x.hidden=false;clearTimeout(x._t);x._t=setTimeout(function(){x.hidden=true},2400)}function add(c,o){state[c].push(Object.assign({id:uid(c),created:new Date().toISOString()},o));save();render()}function log(type,o){state.logs.push(Object.assign({id:uid('log'),type:type,date:day(),timestamp:new Date().toISOString()},o||{}));state.xp+=10;save();render()}function del(c,id){if(c==='squad.quests'){state.squad.quests=state.squad.quests.filter(function(x){return x.id!==id})}else state[c]=state[c].filter(function(x){return x.id!==id});save();render()}function metric(a,b,c){return'<article class="stat"><span>'+a+'</span><strong>'+esc(b)+'</strong><small>'+esc(c||'')+'</small></article>'}function card(t,b){return'<article class="card"><h2>'+t+'</h2>'+b+'</article>'}function inp(l,n,t,v,a){return'<label>'+l+'<input name="'+n+'" type="'+(t||'text')+'" value="'+esc(v==null?'':v)+'" '+(a||'')+'></label>'}function area(l,n,v){return'<label class="full">'+l+'<textarea name="'+n+'">'+esc(v||'')+'</textarea></label>'}function form(kind,title,fields,button){return'<form class="card form" data-form="'+kind+'"><h2>'+title+'</h2>'+fields+'<button class="btn primary" type="submit">'+button+'</button></form>'}function chips(name){return'<div class="chips">'+(domains[name]||[]).map(function(x){return'<span class="chip">'+esc(x)+'</span>'}).join('')+'</div>'}function rows(c,a,key){if(!a.length)return'<p class="empty">Nothing logged yet.</p>';return'<div class="stack-list">'+a.slice().reverse().slice(0,12).map(function(x){return'<div class="stack-row"><div><strong>'+esc(x[key||'name']||x.label||x.type||'Entry')+'</strong><small>'+esc(x.date||x.created||'')+'</small></div><button class="icon-btn danger" data-action="delete" data-collection="'+c+'" data-id="'+x.id+'">×</button></div>'}).join('')+'</div>'}function bar(){return'<div class="actions"><button class="btn" data-route="dashboard">Dashboard</button><button class="btn" data-route="advanced">Control room</button></div>'}function head(e,t,c){return'<section class="hero"><div><p class="eyebrow">'+e+'</p><h1>'+t+'</h1><p class="muted">'+c+'</p></div>'+bar()+'</section>'}function opts(a){return(a||[]).map(function(x){var n=Array.isArray(x)?x[0]:x.name||x;return'<option value="'+esc(n)+'">'+esc(n)+'</option>'}).join('')}function calc(){var p=state.profile,b=p.sex==='female'?10*num(p.weight)+6.25*num(p.height)-5*num(p.age)-161:10*num(p.weight)+6.25*num(p.height)-5*num(p.age)+5,t=Math.round(b*num(p.activity,1.55)),g=p.goal==='lose fat'?-300:p.goal==='gain muscle'?250:0;return{t:t+g,p:Math.round(num(p.weight)*1.8)}}function habits(){var a=source.habits||['Train or walk','2L water','Read 20 minutes','Morning skincare','No phone in bed'];return'<div class="stack-list">'+a.map(function(x){var k=x.toLowerCase(),done=!!state.habits[k];return'<button class="stack-row '+(done?'done':'')+'" data-action="habit" data-habit="'+esc(k)+'"><span class="check">'+(done?'✓':'＋')+'</span><strong>'+esc(x)+'</strong><small>'+(done?'complete today':'mark complete')+'</small></button>'}).join('')+'</div>'}function dashboard(){var recent=state.logs.slice(-8).reverse().map(function(x){return'<li><strong>'+esc(x.type)+'</strong><span>'+esc(x.label||x.detail||x.date)+'</span></li>'}).join('')||'<li class="muted">No activity yet. Choose one action.</li>';return head('TODAY’S OPERATING SYSTEM','Stay locked in, '+esc(state.profile.name||'Operator')+'.','Small actions compound. Every form writes real data to this device.')+'<section class="stats-grid">'+metric('XP',state.xp,'local progress')+metric('STREAK',state.streak,'days')+metric('WATER',state.water+'/8','glasses')+metric('LOGS',state.logs.length,'total')+'</section><section class="grid-two">'+card('Quick actions','<div class="action-grid"><button class="btn primary" data-action="water">Log water</button><button class="btn" data-route="train">Log workout</button><button class="btn" data-action="focus-start">Start focus</button><button class="btn" data-route="nutrition">Log meal</button></div>')+card('Activity feed','<ul class="activity-list">'+recent+'</ul>')+'</section><section class="grid-two">'+card('Today’s checklist',habits())+card('System coverage','<p class="muted">One exportable local state powers every module.</p>'+chips('dashboard'))+'</section>'}function train(){var ex=source.exercises||[],w=state.logs.filter(function(x){return x.type==='workout'}),best=w.reduce(function(m,x){return Math.max(m,num(x.weight))},0);return head('PERFORMANCE LAB','Train with evidence.','Log sets, estimated one-rep maxes, templates, warm-ups, skills and a personal exercise library.')+'<section class="stats-grid">'+metric('SESSIONS',w.length,'logged')+metric('BEST LOAD',best?best+' kg':'—','current log')+metric('E1RM',best?Math.round(best*1.033)+' kg':'—','Epley')+metric('REST',timer.rest?timer.rest+'s':'ready','timer')+'</section><section class="grid-two">'+form('workout','Log training','<label>Exercise<select name="exercise">'+opts(ex)+'</select></label>'+inp('Weight (kg)','weight','number','', 'min="0" step="0.5" required')+inp('Reps','reps','number',5,'min="1" required')+inp('Sets','sets','number',3,'min="1"')+inp('RPE','rpe','number',8,'min="1" max="10" step="0.5"')+inp('Date','date','date',day()),'Log session')+card('Rest timer','<div class="timer">'+(timer.rest||90)+'s</div><div class="actions"><button class="btn primary" data-action="rest-start">Start 90s</button><button class="btn" data-action="rest-add">+30s</button><button class="btn" data-action="rest-stop">Reset</button></div>')+'</section><section class="grid-two">'+card('Session history',rows('logs',w,'label'))+form('exercise','Custom exercise',inp('Exercise','name','text','', 'required')+inp('Pattern / muscle','muscle','text','')+area('Form cues','cues',''),'Add exercise')+'</section><section class="grid-two">'+form('template','Training template',inp('Name','name','text','', 'required')+inp('Frequency','frequency','text','3 sessions / week')+area('Exercises','items',''),'Save template')+card('Periodization, warm-up & skills','<p class="muted">Rotate volume, intensity and deloads. Keep cues and progress notes in your logs.</p>'+chips('train'))+'</section>'}function nutrition(){var c=calc(),m=state.meals.slice(-10).reverse(),k=m.reduce(function(s,x){return s+num(x.calories)},0),p=m.reduce(function(s,x){return s+num(x.protein)},0);return head('FUEL','Nutrition without guesswork.','Calculate TDEE, macros and micros; log food, recipes, meal prep, water, fasting and supplements.')+'<section class="stats-grid">'+metric('TDEE',c.t+' kcal','estimated')+metric('PROTEIN',c.p+' g','target')+metric('TODAY KCAL',k,'logged')+metric('WATER',state.water+'/8','glasses')+'</section><section class="grid-two">'+form('nutrition-profile','TDEE & macro targets',inp('Age','age','number',state.profile.age)+inp('Height (cm)','height','number',state.profile.height)+inp('Weight (kg)','weight','number',state.profile.weight)+'<label>Sex<select name="sex"><option>male</option><option>female</option></select></label>'+inp('Activity multiplier','activity','number',state.profile.activity,'step="0.025"')+'<label>Goal<select name="goal"><option>maintain</option><option>lose fat</option><option>gain muscle</option></select></label>','Calculate + save')+form('meal','Food log',inp('Meal / food','name','text','', 'required')+inp('Calories','calories','number',500)+inp('Protein (g)','protein','number',30)+inp('Carbs (g)','carbs','number',50)+inp('Fat (g)','fat','number',15)+inp('Fiber (g)','fiber','number',5)+inp('Micros / notes','micros','text','iron, calcium, fruit'),'Log meal')+'</section><section class="grid-two">'+card('Recent meals',rows('meals',m,'name')+'<button class="btn" data-action="water">＋ water glass</button>')+form('recipe','Recipes & meal prep',inp('Recipe name','name','text','', 'required')+inp('Prep minutes','prep','number',10)+area('Ingredients','ingredients','')+area('Steps','steps',''),'Save recipe')+'</section><section class="grid-two">'+form('supplement','Supplements & gaps',inp('Supplement','name','text','Creatine monohydrate')+inp('Dose / timing','dose','text','5g daily'),'Add supplement')+card('Plans, grocery, swaps, eating out & fasting','<p class="muted">Keep meal plans, grocery swaps and eating-out notes in recipes/meal logs. Fasting tracks elapsed time locally.</p><div class="timer" data-fast>Not fasting</div><div class="actions"><button class="btn primary" data-action="fast-start">Start fast</button><button class="btn" data-action="fast-stop">Stop fast</button></div>'+chips('nutrition'))+'</section>'}function mind(){var left=timer.focus||1500;return head('COGNITIVE ENGINE','Protect attention.','Pomodoro, study, tests, spaced repetition, drills, mood, journal and screen-time records stay on-device.')+'<section class="stats-grid">'+metric('FOCUS BLOCKS',state.focus.length,'completed')+metric('TIMER',Math.floor(left/60)+':'+String(left%60).padStart(2,'0'),'pomodoro')+metric('MOOD',state.moods.length,'check-ins')+metric('STUDY',state.study.length,'sessions')+'</section><section class="grid-two">'+card('Focus cockpit','<div class="timer" data-focus>'+Math.floor(left/60)+':'+String(left%60).padStart(2,'0')+'</div>'+inp('Focus task','focusTask','text','','placeholder="What matters now?"')+'<div class="actions"><button class="btn primary" data-action="focus-start">Start 25m</button><button class="btn" data-action="focus-add">+5m</button><button class="btn" data-action="focus-stop">Complete block</button></div>')+form('study','Study & spaced repetition',inp('Subject / drill','subject','text','', 'required')+inp('Minutes','minutes','number',25)+inp('Recall / test score','score','number',0)+area('Notes / next review','notes',''),'Log study block')+'</section><section class="grid-two">'+form('mood','Mood + journal','<label>Mood<select name="mood"><option>energised</option><option>steady</option><option>flat</option><option>stressed</option></select></label>'+inp('Intensity 1–10','intensity','number',5)+area('Reflection','note',''),'Save check-in')+form('screen','Screen-time audit',inp('Minutes','minutes','number',0)+inp('Trigger / app','trigger','text',''),'Log screen time')+'</section>'+card('Tests, drills and recall','<p class="muted">Use study entries for mock tests, language drills, retrieval practice and review intervals.</p>'+chips('mind'))}function life(){return head('IDENTITY & ENVIRONMENT','Make the baseline automatic.','Habits, skincare, oral care, posture, measurements, scars, products, SPF, style and life skills in one weekly system.')+'<section class="grid-two">'+card('Daily habits',habits())+form('habit-add','Add a habit',inp('Habit','name','text','', 'required')+inp('Cue / target','cue','text','after breakfast'),'Add habit')+'</section><section class="grid-two">'+form('measurement','Body scan & measurement',inp('Measurement','name','text','Waist')+inp('Value','value','number',0)+inp('Unit','unit','text','cm')+inp('Date','date','date',day()),'Save measurement')+form('skincare','Skin map, scars & products',inp('Product / SPF','name','text','SPF 50')+inp('Area / routine','area','text','face, morning')+area('Notes','notes',''),'Save product')+'</section><section class="grid-two">'+form('lifeskill','Life skills & challenges',inp('Skill / challenge','name','text','', 'required')+inp('Frequency','frequency','text','weekly')+area('Next action','next',''),'Add challenge')+form('schedule','Weekly schedule',inp('Date','date','date',day())+inp('Schedule block','name','text','Deep work')+inp('Time','time','text','08:00'),'Add block')+'</section>'+card('Posture, oral care, warm-ups, sports and style drills','<p class="muted">Keep actionable cues, SPF use, oral care, posture and public-speaking reps in challenges or journals.</p>'+chips('life')+rows('measurements',state.measurements,'name'))}function squad(){var s=state.squad;return head('SQUAD HQ','Make consistency visible.','Quests, freezes, shop, records, friends, duels, combos, leagues, raids, reactions, revenge and rewards are local-first.')+'<section class="stats-grid">'+metric('RANK XP',state.xp,'earned')+metric('COMBO',s.combos,'active')+metric('FREEZES',s.freezes,'owned')+metric('BADGES',s.badges.length,'unlocked')+'</section><section class="grid-two">'+form('quest','Quest board',inp('Quest','name','text','', 'required')+inp('Reward XP','reward','number',50)+inp('Due','due','date',day()),'Create quest')+card('Shop & rewards','<div class="stack-list"><button class="stack-row" data-action="freeze"><strong>Buy streak freeze</strong><small>100 XP · '+s.freezes+' owned</small></button><button class="stack-row" data-action="badge"><strong>Claim consistency badge</strong><small>250 XP · '+s.badges.length+' claimed</small></button></div>'+chips('squad'))+'</section><section class="grid-two">'+form('friend','Friends, duels & leagues',inp('Friend / rival','name','text','', 'required')+inp('Challenge','challenge','text','7 day consistency'),'Add friend')+form('reaction','Squad reactions',inp('Reaction / note','text','text','Locked in'),'Post reaction')+'</section>'+card('Quest records',rows('squad.quests',s.quests,'name'))}function advanced(){return head('CONTROL ROOM','Own the system.','Goals, competitions, rankings, runs, arcs, charts, glow-up tracks, reminders, notifications, privacy and portability.')+'<section class="grid-two">'+form('goal','Goals & arcs',inp('Goal','name','text','', 'required')+inp('Target date','due','date',day())+inp('Metric / target','target','text','3 sessions'),'Add goal')+form('competition','Competitions, rankings & runs',inp('Competition / run','name','text','', 'required')+inp('Date','date','date',day())+inp('Result / distance','result','text',''),'Log event')+'</section><section class="grid-two">'+form('reminder','Reminders & notifications',inp('Reminder','name','text','Review plan')+inp('When','when','datetime-local',''),'Save reminder')+form('glowup','Charts & glow-up tracks',inp('Track','name','text','Presence')+inp('Milestone','milestone','text','Public speaking drill')+inp('Progress %','progress','number',0),'Save track')+'</section><section class="grid-two">'+card('Privacy & admin','<label class="toggle"><input type="checkbox" data-setting="analytics" '+(state.privacy.analytics?'checked':'')+'> Local analytics enabled</label><label class="toggle"><input type="checkbox" data-setting="lock" '+(state.privacy.lock?'checked':'')+'> Device lock reminder</label><div class="actions"><button class="btn primary" data-action="export">Export JSON</button><button class="btn danger" data-action="reset">Reset local progress</button></div>')+form('import','Import backup',area('Paste export JSON','json',''),'Import state')+'</section><section class="grid-two">'+card('Goals',rows('goals',state.goals,'name'))+card('Events',rows('competitions',state.competitions,'name')+rows('runs',state.runs,'name'))+'</section>'}views.dashboard=dashboard;views.train=train;views.nutrition=nutrition;views.mind=mind;views.life=life;views.squad=squad;views.advanced=advanced;function render(){var r=(location.hash||'#dashboard').slice(1)||'dashboard';if(!views[r])r='dashboard';state.route=r;var a=document.getElementById('app');if(a){a.innerHTML=views[r]();a.focus({preventScroll:true})}document.querySelectorAll('[data-route]').forEach(function(x){x.classList.toggle('active',x.getAttribute('data-route')===r)});var o=document.getElementById('onboarding');if(o)o.hidden=!!state.onboardingComplete;var f=document.querySelector('[data-fast]');if(f&&timer.fast)f.textContent='Fasting · '+Math.floor((Date.now()-timer.fast)/3600000)+'h';}
-function submit(f){var k=f.getAttribute('data-form'),d={};new FormData(f).forEach(function(v,x){d[x]=v});if(k==='workout'){var w=num(d.weight),r=num(d.reps);log('workout',{label:d.exercise||'Workout',weight:w,reps:r,sets:num(d.sets),rpe:num(d.rpe),e1rm:Math.round(w*(1+r/30)),date:d.date||day()});state.streak++;toast('Training logged · E1RM '+Math.round(w*(1+r/30))+'kg');return}if(k==='meal'){add('meals',{name:d.name,calories:num(d.calories),protein:num(d.protein),carbs:num(d.carbs),fat:num(d.fat),fiber:num(d.fiber),micros:d.micros,date:day()});log('meal',{label:d.name});toast('Meal saved');return}if(k==='nutrition-profile'){['age','height','weight','activity'].forEach(function(x){state.profile[x]=num(d[x])});state.profile.sex=d.sex;state.profile.goal=d.goal;save();render();toast('Targets recalculated');return}if(k==='exercise'){add('exercises',{name:d.name,muscle:d.muscle,cues:d.cues});toast('Exercise added');return}if(k==='template'){add('templates',{name:d.name,frequency:d.frequency,items:d.items});toast('Template saved');return}if(k==='recipe'){add('recipes',{name:d.name,prep:num(d.prep),ingredients:d.ingredients,steps:d.steps});toast('Recipe saved');return}if(k==='supplement'){add('supplements',{name:d.name,dose:d.dose});toast('Supplement saved');return}if(k==='study'){add('study',{subject:d.subject,minutes:num(d.minutes),score:num(d.score),notes:d.notes,date:day()});log('study',{label:d.subject});toast('Study block saved');return}if(k==='mood'){add('moods',{mood:d.mood,intensity:num(d.intensity),note:d.note,date:day()});add('journal',{note:d.note,date:day()});toast('Check-in saved');return}if(k==='screen'){add('screenTime',{minutes:num(d.minutes),trigger:d.trigger,date:day()});toast('Screen-time saved');return}if(k==='habit-add'){state.habits[d.name.toLowerCase()]=false;save();render();toast('Habit added');return}if(k==='measurement'){add('measurements',{name:d.name,value:num(d.value),unit:d.unit,date:d.date||day()});toast('Measurement saved');return}if(k==='skincare'){add('skincare',{name:d.name,area:d.area,notes:d.notes});toast('Care item saved');return}if(k==='lifeskill'){add('lifeSkills',{name:d.name,frequency:d.frequency,next:d.next});toast('Challenge added');return}if(k==='schedule'){add('schedule',{name:d.name,date:d.date,time:d.time});toast('Schedule saved');return}if(k==='quest'){state.squad.quests.push({id:uid('quest'),name:d.name,reward:num(d.reward,50),due:d.due,done:false});save();render();toast('Quest created');return}if(k==='friend'){state.squad.friends.push({id:uid('friend'),name:d.name,challenge:d.challenge});save();render();toast('Squad member added');return}if(k==='reaction'){state.squad.reactions.push({id:uid('reaction'),text:d.text,date:day()});save();render();toast('Reaction posted');return}if(k==='goal'){add('goals',{name:d.name,due:d.due,target:d.target,done:false});toast('Goal added');return}if(k==='competition'){add('competitions',{name:d.name,date:d.date,result:d.result});add('runs',{name:d.name,date:d.date,result:d.result});toast('Event logged');return}if(k==='reminder'){add('reminders',{name:d.name,when:d.when,active:true});toast('Reminder saved');return}if(k==='glowup'){add('glowup',{name:d.name,milestone:d.milestone,progress:num(d.progress)});toast('Track saved');return}if(k==='import'){try{state=merge(defaults,JSON.parse(d.json));save();render();toast('Backup imported')}catch(e){toast('Import failed: invalid JSON')}return}}
-function act(a,nod){var s=state;if(a==='water'){s.water=Math.min(8,num(s.water)+1);log('water',{label:'Water glass'});toast('Hydration logged');return}if(a==='habit'){var h=nod.getAttribute('data-habit');s.habits[h]=!s.habits[h];save();render();toast(s.habits[h]?'Habit locked in':'Habit unchecked');return}if(a==='focus-start'){timer.focus=timer.focus||1500;clearInterval(timer.fi);timer.fi=setInterval(function(){if(timer.focus>0){timer.focus--;render()}else clearInterval(timer.fi)},1000);toast('Focus block started');return}if(a==='focus-add'){timer.focus=(timer.focus||0)+300;render();return}if(a==='focus-stop'){clearInterval(timer.fi);s.focus.push({id:uid('focus'),task:(document.querySelector('[name=focusTask]')||{}).value||'Focus block',minutes:25,date:day()});log('focus',{label:'Focus block'});timer.focus=0;toast('Focus block saved');return}if(a==='rest-start'){timer.rest=90;clearInterval(timer.ri);timer.ri=setInterval(function(){if(timer.rest>0){timer.rest--;render()}else clearInterval(timer.ri)},1000);render();return}if(a==='rest-add'){timer.rest=(timer.rest||0)+30;render();return}if(a==='rest-stop'){clearInterval(timer.ri);timer.rest=0;render();return}if(a==='fast-start'){timer.fast=Date.now();render();toast('Fast started');return}if(a==='fast-stop'){timer.fast=null;render();toast('Fast stopped');return}if(a==='freeze'){if(s.xp>=100){s.xp-=100;s.squad.freezes++;save();render();toast('Streak freeze purchased')}else toast('Need 100 XP');return}if(a==='badge'){if(s.xp>=250&&!s.squad.badges.includes('consistency')){s.xp-=250;s.squad.badges.push('consistency');save();render();toast('Badge unlocked')}else toast('Need 250 XP or badge already claimed');return}if(a==='delete'){del(nod.getAttribute('data-collection'),nod.getAttribute('data-id'));toast('Entry deleted');return}if(a==='export'){var b=new Blob([JSON.stringify(s,null,2)],{type:'application/json'}),l=document.createElement('a');l.href=URL.createObjectURL(b);l.download='locked-in-v3-backup-'+day()+'.json';l.click();URL.revokeObjectURL(l.href);toast('Export ready');return}if(a==='reset'&&confirm('Reset all local progress?')){try{localStorage.removeItem(KEY)}catch(e){}state=merge(defaults,{});save();render();toast('Local progress reset')}}document.addEventListener('click',function(e){var r=e.target.closest('[data-route]');if(r){e.preventDefault();location.hash=r.getAttribute('data-route');return}var a=e.target.closest('[data-action]');if(a){e.preventDefault();act(a.getAttribute('data-action'),a)}});document.addEventListener('submit',function(e){var f=e.target.closest('[data-form]');if(f){e.preventDefault();submit(f)}});document.addEventListener('change',function(e){var s=e.target.closest('[data-setting]');if(s){state.privacy[s.getAttribute('data-setting')]=s.checked;save();toast('Privacy setting saved')}});window.addEventListener('hashchange',render);document.addEventListener('DOMContentLoaded',function(){var f=document.getElementById('onboarding-form'),skip=document.querySelector('[data-onboarding-skip]');if(f)f.addEventListener('submit',function(e){e.preventDefault();state.profile.name=val(f,'name')||'Operator';state.profile.goal=val(f,'goal')||state.profile.goal;state.onboardingComplete=true;save();render();toast('Setup complete')});if(skip)skip.addEventListener('click',function(){state.onboardingComplete=true;save();render()});render()});window.LockedIn={state:function(){return state},save:save,toast:toast,record:log,render:render,registerDomain:function(n,a){domains[n]=(domains[n]||[]).concat(a||[])},registerView:function(n,v){views[n]=v}}})();
+(function () {
+  "use strict";
+
+  const STORAGE_KEY = "locked-in-v3-state";
+  const source = window.LOCKED_DATA || {};
+
+  const DEFAULTS = {
+    profile: {
+      name: "Operator",
+      goal: "strength, confidence, consistency",
+      sex: "male",
+      age: 25,
+      height: 175,
+      weight: 75,
+      activity: 1.55
+    },
+    onboardingComplete: false,
+    route: "dashboard",
+    xp: 0,
+    streak: 0,
+    water: 0,
+    logs: [],
+    meals: [],
+    exercises: [],
+    templates: [],
+    measurements: [],
+    bodyScans: [],
+    goals: [],
+    habits: {},
+    recipes: [],
+    plans: [],
+    groceries: [],
+    supplements: [],
+    focus: [],
+    study: [],
+    moods: [],
+    journal: [],
+    screenTime: [],
+    lifeSkills: [],
+    skincare: [],
+    scars: [],
+    schedule: [],
+    quests: [],
+    competitions: [],
+    rankings: [],
+    runs: [],
+    arcs: [],
+    glowup: [],
+    reminders: [],
+    notifications: [],
+    privacy: { analytics: false, lock: false },
+    settings: { compact: false },
+    squad: {
+      quests: [],
+      freezes: 0,
+      shop: [],
+      friends: [],
+      duels: [],
+      reactions: [],
+      badges: [],
+      trophies: [],
+      photos: [],
+      sessions: [],
+      leagues: [],
+      raids: [],
+      combos: 0
+    }
+  };
+
+  let store = readState();
+  const actions = {};
+  const domains = {};
+  const timer = { focus: 0, rest: 0, fast: null, focusId: null, restId: null };
+  window.LIViews = window.LIViews || {};
+
+  function copy(value) {
+    if (Array.isArray(value)) return value.slice();
+    if (value && typeof value === "object") return merge({}, value);
+    return value;
+  }
+
+  function merge(base, extra) {
+    const result = Array.isArray(base) ? base.slice() : Object.assign({}, base || {});
+    Object.keys(extra || {}).forEach(function (key) {
+      const value = extra[key];
+      if (Array.isArray(value)) {
+        result[key] = value.slice();
+      } else if (value && typeof value === "object") {
+        result[key] = merge(result[key] && typeof result[key] === "object" ? result[key] : {}, value);
+      } else if (value !== undefined) {
+        result[key] = value;
+      }
+    });
+    return result;
+  }
+
+  function normalize(value) {
+    const next = merge(DEFAULTS, value || {});
+    const arrays = [
+      "logs", "meals", "exercises", "templates", "measurements", "bodyScans",
+      "goals", "recipes", "plans", "groceries", "supplements", "focus", "study",
+      "moods", "journal", "screenTime", "lifeSkills", "skincare", "scars", "schedule",
+      "quests", "competitions", "rankings", "runs", "arcs", "glowup", "reminders", "notifications"
+    ];
+    arrays.forEach(function (key) {
+      if (!Array.isArray(next[key])) next[key] = [];
+    });
+    if (!next.habits || typeof next.habits !== "object" || Array.isArray(next.habits)) next.habits = {};
+    if (!next.squad || typeof next.squad !== "object") next.squad = copy(DEFAULTS.squad);
+    if (!Array.isArray(next.squad.quests)) next.squad.quests = [];
+    if (!Array.isArray(next.quests) || next.quests.length === 0) next.quests = next.squad.quests;
+    next.squad.quests = next.quests;
+    return next;
+  }
+
+  function readState() {
+    try {
+      return normalize(JSON.parse(localStorage.getItem(STORAGE_KEY) || "null"));
+    } catch (error) {
+      return normalize({});
+    }
+  }
+
+  function save() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+      const status = document.getElementById("save-status");
+      if (status) status.textContent = "Saved locally " + new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    } catch (error) {
+      const status = document.getElementById("save-status");
+      if (status) status.textContent = "Local save unavailable";
+    }
+  }
+
+  function escapeHtml(value) {
+    return String(value === null || value === undefined ? "" : value).replace(/[&<>"']/g, function (character) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[character];
+    });
+  }
+
+  function number(value, fallback) {
+    const result = Number(value);
+    return Number.isFinite(result) ? result : (fallback || 0);
+  }
+
+  function today() {
+    return new Date().toISOString().slice(0, 10);
+  }
+
+  function uid(prefix) {
+    return (prefix || "id") + "-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8);
+  }
+
+  function state() {
+    return store;
+  }
+
+  function toast(message) {
+    const node = document.getElementById("toast");
+    if (!node) return;
+    node.textContent = message;
+    node.hidden = false;
+    clearTimeout(node._hideTimer);
+    node._hideTimer = setTimeout(function () {
+      node.hidden = true;
+    }, 2400);
+  }
+
+  function awardXP(amount) {
+    store.xp = Math.max(0, number(store.xp) + number(amount));
+  }
+
+  function record(type, details) {
+    store.logs.push(Object.assign({
+      id: uid(type),
+      type: type,
+      date: today(),
+      timestamp: new Date().toISOString()
+    }, details || {}));
+    awardXP(10);
+    save();
+    render();
+  }
+
+  function addCreatine(dose, timing) {
+    store.supplements.push({
+      id: uid("supplement"),
+      name: "Creatine monohydrate",
+      dose: dose || "5g",
+      timing: timing || "daily",
+      date: today()
+    });
+    record("supplement", { label: "Creatine logged" });
+    toast("Creatine logged");
+  }
+
+  function metric(label, value, note) {
+    return `<article class="stat"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong><small>${escapeHtml(note || "")}</small></article>`;
+  }
+
+  function card(title, body) {
+    return `<article class="card"><h2>${escapeHtml(title)}</h2>${body}</article>`;
+  }
+
+  function heading(eyebrow, title, description) {
+    return `<section class="hero"><div><p class="eyebrow">${escapeHtml(eyebrow)}</p><h1>${escapeHtml(title)}</h1><p class="muted">${escapeHtml(description)}</p></div></section>`;
+  }
+
+  function logRows(items) {
+    if (!items.length) return `<p class="empty">Nothing logged yet. Choose one small action.</p>`;
+    return `<div class="stack-list">${items.slice().reverse().slice(0, 10).map(function (item) {
+      return `<div class="stack-row"><div><strong>${escapeHtml(item.label || item.type || "Entry")}</strong><small>${escapeHtml(item.date || item.created || "")}</small></div><span class="muted">${escapeHtml(item.type || "log")}</span></div>`;
+    }).join("")}</div>`;
+  }
+
+  function habitsMarkup() {
+    const habits = Array.isArray(source.habits) && source.habits.length ? source.habits : ["Train or walk", "2L water", "Read 20 minutes", "Morning skincare", "No phone in bed"];
+    return `<div class="stack-list">${habits.map(function (habit) {
+      const key = String(habit).toLowerCase();
+      const done = Boolean(store.habits[key]);
+      return `<button class="stack-row ${done ? "done" : ""}" data-action="habit" data-habit="${escapeHtml(key)}"><span class="check">${done ? "✓" : "○"}</span><strong>${escapeHtml(habit)}</strong><small>${done ? "complete today" : "mark complete"}</small></button>`;
+    }).join("")}</div>`;
+  }
+
+  function dashboard() {
+    const profile = store.profile || DEFAULTS.profile;
+    return heading("TODAY'S OPERATING SYSTEM", "Stay locked in, " + (profile.name || "Operator") + ".", "Small actions compound. Every form writes real data to this device.") +
+      `<section class="stats-grid">${metric("XP", store.xp, "local progress")}${metric("STREAK", store.streak, "days")}${metric("WATER", store.water + "/8", "glasses")}${metric("LOGS", store.logs.length, "total")}</section>` +
+      `<section class="grid-two">${card("Quick actions", `<div class="action-grid"><button class="btn primary" data-action="water">Log water</button><button class="btn" data-route="train">Log workout</button><button class="btn" data-action="focus-start">Start focus</button><button class="btn" data-route="nutrition">Log meal</button><button class="btn" data-action="creatine">Log creatine</button></div>`)}${card("Recent activity", logRows(store.logs))}</section>` +
+      `<section class="grid-two">${card("Today's checklist", habitsMarkup())}${card("Quest board", store.quests.length ? logRows(store.quests.map(function (quest) { return { label: quest.name, type: quest.done ? "complete" : "open", date: quest.due }; })) : `<p class="empty">No quests yet. Open Squad to create an accountability target.</p>`)}</section>`;
+  }
+
+  function fallback(route, title, copyText) {
+    return heading(route.toUpperCase(), title, copyText) + card("Module ready", `<p class="muted">This route is available. Its feature script can register a richer view without changing the core contract.</p><button class="btn" data-route="dashboard">Back to dashboard</button>`);
+  }
+
+  function registerView(name, view) {
+    if (typeof view !== "function") return;
+    window.LIViews[name] = view;
+    views[name] = view;
+  }
+
+  const views = window.LIViews;
+  registerView("dashboard", dashboard);
+  registerView("train", function () { return fallback("train", "Train", "Performance is built from repeatable sessions."); });
+  registerView("nutrition", function () { return fallback("nutrition", "Nutrition", "Record the next meal, not a perfect plan."); });
+  registerView("mind", function () { return fallback("mind", "Mind", "Protect attention before you ask it to perform."); });
+  registerView("life", function () { return fallback("life", "Life", "Build the baseline that makes every other goal easier."); });
+  registerView("squad", function () { return fallback("squad", "Squad", "Accountability is a force multiplier."); });
+  registerView("advanced", function () { return fallback("advanced", "Control room", "Your state is local-first and exportable."); });
+
+  function registerAction(name, handler) {
+    if (typeof handler === "function") actions[name] = handler;
+  }
+
+  function collectionAt(path) {
+    return path.split(".").reduce(function (value, key) {
+      return value && value[key];
+    }, store);
+  }
+
+  function deleteEntry(node) {
+    const collection = collectionAt(node.getAttribute("data-collection") || "logs");
+    const id = node.getAttribute("data-id");
+    if (!Array.isArray(collection)) return;
+    const index = collection.findIndex(function (item) { return item && item.id === id; });
+    if (index >= 0) collection.splice(index, 1);
+    save();
+    toast("Entry deleted");
+  }
+
+  function exportState() {
+    const blob = new Blob([JSON.stringify(store, null, 2)], { type: "application/json" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "locked-in-v3-backup-" + today() + ".json";
+    link.click();
+    URL.revokeObjectURL(link.href);
+    toast("Export ready");
+  }
+
+  function resetState() {
+    if (!window.confirm("Reset all local progress?")) return;
+    try { localStorage.removeItem(STORAGE_KEY); } catch (error) {}
+    store = normalize({});
+    save();
+    render();
+    toast("Local progress reset");
+  }
+
+  registerAction("water", function () {
+    store.water = Math.min(8, number(store.water) + 1);
+    record("water", { label: "Water glass" });
+    toast("Hydration logged");
+  });
+
+  registerAction("habit", function (node) {
+    const key = node.getAttribute("data-habit");
+    store.habits[key] = !store.habits[key];
+    record("habit", { label: key, completed: store.habits[key] });
+    toast(store.habits[key] ? "Habit locked in" : "Habit unchecked");
+  });
+
+  registerAction("delete", deleteEntry);
+
+  registerAction("focus-start", function () {
+    timer.focus = timer.focus || 1500;
+    clearInterval(timer.focusId);
+    timer.focusId = setInterval(function () {
+      if (timer.focus > 0) timer.focus -= 1;
+      if (timer.focus <= 0) clearInterval(timer.focusId);
+      render();
+    }, 1000);
+    toast("Focus block started");
+  });
+
+  registerAction("focus-add", function () {
+    timer.focus += 300;
+    toast("Five minutes added");
+  });
+
+  registerAction("focus-stop", function () {
+    clearInterval(timer.focusId);
+    if (timer.focus > 0) {
+      store.focus.push({ id: uid("focus"), task: "Focus block", minutes: Math.round((1500 - timer.focus) / 60), date: today() });
+      record("focus", { label: "Focus block" });
+    }
+    timer.focus = 0;
+    toast("Focus block saved");
+  });
+
+  registerAction("rest-start", function () {
+    timer.rest = 90;
+    clearInterval(timer.restId);
+    timer.restId = setInterval(function () {
+      if (timer.rest > 0) timer.rest -= 1;
+      if (timer.rest <= 0) clearInterval(timer.restId);
+      render();
+    }, 1000);
+  });
+
+  registerAction("rest-add", function () { timer.rest += 30; });
+  registerAction("rest-stop", function () { clearInterval(timer.restId); timer.rest = 0; render(); });
+  registerAction("fast-start", function () { timer.fast = Date.now(); toast("Fast started"); });
+  registerAction("fast-stop", function () { timer.fast = null; toast("Fast stopped"); });
+  registerAction("creatine", function () { addCreatine(); });
+
+  registerAction("freeze", function () {
+    if (store.xp < 100) return toast("Need 100 XP");
+    store.xp -= 100;
+    store.squad.freezes += 1;
+    save();
+    toast("Streak freeze purchased");
+  });
+
+  registerAction("badge", function () {
+    if (store.xp < 250 || store.squad.badges.indexOf("consistency") >= 0) return toast("Need 250 XP or badge already claimed");
+    store.xp -= 250;
+    store.squad.badges.push("consistency");
+    save();
+    toast("Consistency badge unlocked");
+  });
+
+  registerAction("export", exportState);
+  registerAction("reset", resetState);
+
+  function render() {
+    const root = document.getElementById("app");
+    if (!root) return;
+    const requested = (window.location.hash || "#dashboard").slice(1) || "dashboard";
+    const route = views[requested] ? requested : "dashboard";
+    store.route = route;
+    root.innerHTML = views[route](store);
+    document.querySelectorAll("[data-route]").forEach(function (node) {
+      node.classList.toggle("active", node.getAttribute("data-route") === route);
+    });
+    const onboarding = document.getElementById("onboarding");
+    if (onboarding) onboarding.hidden = Boolean(store.onboardingComplete);
+    const focusNode = document.querySelector("[data-focus]");
+    if (focusNode) focusNode.textContent = formatTime(timer.focus);
+    const restNode = document.querySelector("[data-rest]");
+    if (restNode) restNode.textContent = formatTime(timer.rest);
+    const fastNode = document.querySelector("[data-fast]");
+    if (fastNode) fastNode.textContent = timer.fast ? "Fasting " + Math.floor((Date.now() - timer.fast) / 3600000) + "h" : "Not fasting";
+  }
+
+  function formatTime(seconds) {
+    const value = Math.max(0, number(seconds));
+    return String(Math.floor(value / 60)).padStart(2, "0") + ":" + String(value % 60).padStart(2, "0");
+  }
+
+  function routeTo(route) {
+    window.location.hash = route || "dashboard";
+  }
+
+  function handleAction(node) {
+    const name = node.getAttribute("data-action");
+    const handler = actions[name];
+    if (!handler) return;
+    handler(node);
+    save();
+    render();
+  }
+
+  document.addEventListener("click", function (event) {
+    const routeNode = event.target.closest("[data-route]");
+    if (routeNode) {
+      event.preventDefault();
+      routeTo(routeNode.getAttribute("data-route"));
+      return;
+    }
+    const actionNode = event.target.closest("[data-action]");
+    if (actionNode) {
+      event.preventDefault();
+      handleAction(actionNode);
+    }
+  });
+
+  document.addEventListener("submit", function (event) {
+    const form = event.target;
+    if (!form || form.id !== "onboarding-form") return;
+    event.preventDefault();
+    const data = new FormData(form);
+    store.profile.name = String(data.get("name") || "Operator").trim() || "Operator";
+    store.profile.goal = String(data.get("goal") || store.profile.goal);
+    store.onboardingComplete = true;
+    save();
+    render();
+    toast("Setup complete");
+  });
+
+  document.addEventListener("click", function (event) {
+    const skip = event.target.closest("[data-onboarding-skip]");
+    if (!skip) return;
+    store.onboardingComplete = true;
+    save();
+    render();
+  });
+
+  window.addEventListener("hashchange", render);
+
+  const api = {
+    state: state,
+    save: save,
+    toast: toast,
+    escape: escapeHtml,
+    esc: escapeHtml,
+    num: number,
+    record: record,
+    render: render,
+    registerView: registerView,
+    registerAction: registerAction,
+    registerDomain: function (name, values) { domains[name] = (domains[name] || []).concat(values || []); },
+    awardXP: awardXP,
+    addCreatine: addCreatine,
+    route: routeTo,
+    actions: actions,
+    views: views,
+    source: source
+  };
+
+  window.app = api;
+  window.LockedIn = api;
+  window.esc = escapeHtml;
+  window.num = number;
+  window.save = save;
+  window.toast = toast;
+  window.awardXP = awardXP;
+  window.addCreatine = addCreatine;
+  window.state = state;
+
+  function start() {
+    save();
+    render();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", start, { once: true });
+  } else {
+    start();
+  }
+})();
