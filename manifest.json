@@ -1,0 +1,11 @@
+{
+  "name": "LOCKED IN V3",
+  "short_name": "LOCKED IN",
+  "description": "Offline-first personal operating system for training, nutrition, mind, life, squad, and progress.",
+  "lang": "en",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#141416",
+  "theme_color": "#141416"
+}
