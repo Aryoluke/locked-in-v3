@@ -32,12 +32,12 @@
 <label>Age <input name="age" type="number" min="0" inputmode="numeric"></label>
 <label>Date of birth <input name="dob" type="date"></label>
 <label>Height <input name="height" placeholder="cm or ft"></label>
-<label>Weight <input name="weight" placeholder="kg or lb"></label>
+<label>Weight <input name="weight" inputmode="decimal" placeholder="kg or lb"></label>
 <label>Body type <input name="bodyType" placeholder="Body type"></label>
 <label>Diet <input name="diet" placeholder="Diet style"></label>
 <label>Equipment <input name="equipment" placeholder="Available equipment"></label>
-<label>Goals <input name="goals" placeholder="Strength, confidence, consistency"></label>
-<div class="modal-actions"><button type="button" class="btn" data-onboarding-skip>Skip for now</button><button type="submit" class="btn primary">Complete setup</button></div>
+<label class="full">Goals <input name="goals" placeholder="Strength, confidence, consistency"></label>
+<div class="modal-actions full"><button type="button" class="btn" data-onboarding-skip>Skip for now</button><button type="submit" class="btn primary">Complete setup</button></div>
 </form>
 </section>
 </div>
@@ -50,5 +50,6 @@
 <script src="app-squad.js"></script>
 <script src="app-train.js"></script>
 <script src="app-ux.js"></script>
+<script src="app-depth.js"></script>
 </body>
 </html>
