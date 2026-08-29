@@ -1,11 +1,54 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#141416"><title>LOCKED IN V3</title><link rel="stylesheet" href="styles.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#141416">
+<title>LOCKED IN V3</title>
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<div class="app-shell"><header class="topbar"><a class="brand" href="#dashboard" data-route="dashboard">LOCKED IN <span>V3</span></a><div id="save-status" class="save-status" aria-live="polite">Offline ready</div></header><div class="app-layout"><nav class="sidebar" aria-label="Primary navigation"><button class="nav-link" data-route="dashboard">Dashboard</button><button class="nav-link" data-route="train">Train</button><button class="nav-link" data-route="nutrition">Nutrition</button><button class="nav-link" data-route="mind">Mind</button><button class="nav-link" data-route="life">Life</button><button class="nav-link" data-route="squad">Squad</button><button class="nav-link" data-route="advanced">Control room</button></nav><main id="app" class="content" tabindex="-1"><section class="card"><p>Loading your operating system…</p></section></main></div></div>
+<div class="app-shell">
+<header class="topbar"><a class="brand" href="#dashboard" data-route="dashboard">LOCKED IN <span>V3</span></a><div id="save-status" class="save-status" aria-live="polite">Offline ready</div></header>
+<div class="app-layout">
+<nav class="sidebar" aria-label="Primary navigation">
+<button class="nav-link" data-route="dashboard">Dashboard</button>
+<button class="nav-link" data-route="train">Train</button>
+<button class="nav-link" data-route="nutrition">Nutrition</button>
+<button class="nav-link" data-route="mind">Mind</button>
+<button class="nav-link" data-route="life">Life</button>
+<button class="nav-link" data-route="squad">Squad</button>
+<button class="nav-link" data-route="advanced">Control room</button>
+</nav>
+<main id="app" class="content" tabindex="-1"><section class="card"><p>Loading your operating system...</p></section></main>
+</div>
+</div>
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
-<div id="onboarding" class="modal-backdrop" hidden><section class="modal" role="dialog" aria-modal="true" aria-labelledby="onboarding-title"><p class="eyebrow">START HERE</p><h1 id="onboarding-title">Build your operating system</h1><p class="muted">Your data stays on this device. Set defaults, then use every page as a working log.</p><form id="onboarding-form" class="form"><label>Name <input name="name" autocomplete="name" placeholder="Operator"></label><label>Primary goal <input name="goal" placeholder="Strength, confidence, consistency"></label><div class="modal-actions"><button type="button" class="btn" data-onboarding-skip>Skip for now</button><button type="submit" class="btn primary">Complete setup</button></div></form></section></div>
-<script src="data.js"></script><script src="app-core.js"></script><script src="app-advanced.js"></script><script src="app-life.js"></script><script src="app-mind.js"></script><script src="app-nutrition.js"></script><script src="app-squad.js"></script><script src="app-train.js"></script><script src="app-ux.js"></script>
-</body></html>
+<div id="onboarding" class="modal-backdrop" hidden>
+<section class="modal" role="dialog" aria-modal="true" aria-labelledby="onboarding-title">
+<p class="eyebrow">START HERE</p><h1 id="onboarding-title">Build your operating system</h1><p class="muted">Your data stays on this device. Set defaults, then use every page as a working log.</p>
+<form id="onboarding-form" class="form">
+<label>Name <input name="name" autocomplete="name" placeholder="Operator"></label>
+<label>Age <input name="age" type="number" min="0" inputmode="numeric"></label>
+<label>Date of birth <input name="dob" type="date"></label>
+<label>Height <input name="height" placeholder="cm or ft"></label>
+<label>Weight <input name="weight" placeholder="kg or lb"></label>
+<label>Body type <input name="bodyType" placeholder="Body type"></label>
+<label>Diet <input name="diet" placeholder="Diet style"></label>
+<label>Equipment <input name="equipment" placeholder="Available equipment"></label>
+<label>Goals <input name="goals" placeholder="Strength, confidence, consistency"></label>
+<div class="modal-actions"><button type="button" class="btn" data-onboarding-skip>Skip for now</button><button type="submit" class="btn primary">Complete setup</button></div>
+</form>
+</section>
+</div>
+<script src="data.js"></script>
+<script src="app-core.js"></script>
+<script src="app-advanced.js"></script>
+<script src="app-life.js"></script>
+<script src="app-mind.js"></script>
+<script src="app-nutrition.js"></script>
+<script src="app-squad.js"></script>
+<script src="app-train.js"></script>
+<script src="app-ux.js"></script>
+</body>
+</html>
