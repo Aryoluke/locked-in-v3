@@ -2,7 +2,7 @@
 'use strict';
 var storageKey='locked-in-v3-state';
 var state={name:'',goal:'',route:'dashboard',xp:0,level:1,streak:0,lastDay:'',water:0,workouts:0,meals:0,study:0,weight:'',mood:'',habit:'',history:{}};
-var actions={water:null,workout:null,meal:null,study:null,weight:null,mood:null,habit:null,export:null,importState:null,reset:null};
+var actions={water:null,workout:null,meal:null,study:null,weight:null,mood:null,habit:null,export:null,importState:null,reset:null,finishOnboarding:null};
 var app=window.app||{};
 function el(tag,text,className){
  var node=document.createElement(tag);
@@ -25,25 +25,25 @@ function save(){
 }
 function load(){
  try{
-  var saved=localStorage.getItem(storageKey);
-  if(saved){
-   var data=JSON.parse(saved);
-   if(data.name!==undefined){state.name=data.name;}
-   if(data.goal!==undefined){state.goal=data.goal;}
-   if(data.route!==undefined){state.route=data.route;}
-   if(data.xp!==undefined){state.xp=data.xp;}
-   if(data.level!==undefined){state.level=data.level;}
-   if(data.streak!==undefined){state.streak=data.streak;}
-   if(data.lastDay!==undefined){state.lastDay=data.lastDay;}
-   if(data.water!==undefined){state.water=data.water;}
-   if(data.workouts!==undefined){state.workouts=data.workouts;}
-   if(data.meals!==undefined){state.meals=data.meals;}
-   if(data.study!==undefined){state.study=data.study;}
-   if(data.weight!==undefined){state.weight=data.weight;}
-   if(data.mood!==undefined){state.mood=data.mood;}
-   if(data.habit!==undefined){state.habit=data.habit;}
-   if(data.history!==undefined){state.history=data.history;}
-  }
+ var saved=localStorage.getItem(storageKey);
+ if(saved){
+ var data=JSON.parse(saved);
+ if(data.name!==undefined){state.name=data.name;}
+ if(data.goal!==undefined){state.goal=data.goal;}
+ if(data.route!==undefined){state.route=data.route;}
+ if(data.xp!==undefined){state.xp=data.xp;}
+ if(data.level!==undefined){state.level=data.level;}
+ if(data.streak!==undefined){state.streak=data.streak;}
+ if(data.lastDay!==undefined){state.lastDay=data.lastDay;}
+ if(data.water!==undefined){state.water=data.water;}
+ if(data.workouts!==undefined){state.workouts=data.workouts;}
+ if(data.meals!==undefined){state.meals=data.meals;}
+ if(data.study!==undefined){state.study=data.study;}
+ if(data.weight!==undefined){state.weight=data.weight;}
+ if(data.mood!==undefined){state.mood=data.mood;}
+ if(data.habit!==undefined){state.habit=data.habit;}
+ if(data.history!==undefined){state.history=data.history;}
+ }
  }catch(error){}
  return state;
 }
@@ -66,14 +66,14 @@ function awardXp(amount){
 function updateStreak(){
  var day=today();
  if(state.lastDay!==day){
-  if(state.lastDay){
-   var old=new Date(state.lastDay);
-   var now=new Date(day);
-   var gap=Math.round((now-old)/86400000);
-   if(gap===1){state.streak=Number(state.streak)||0;state.streak=state.streak+1;}
-   else{state.streak=1;}
-  }else{state.streak=1;}
-  state.lastDay=day;
+ if(state.lastDay){
+ var old=new Date(state.lastDay);
+ var now=new Date(day);
+ var gap=Math.round((now-old)/86400000);
+ if(gap===1){state.streak=Number(state.streak)||0;state.streak=state.streak+1;}
+ else{state.streak=1;}
+ }else{state.streak=1;}
+ state.lastDay=day;
  }
 }
 function metric(label,value,note){
@@ -127,7 +127,7 @@ function dashboard(){
  main.appendChild(actionsPanel);
  var log=el('section',undefined,'card');
  log.appendChild(heading('Today','A plain record beats a perfect plan.'));
- log.appendChild(el('p','Water '+state.water+'  Workouts '+state.workouts+'  Meals '+state.meals+'  Study '+state.study,'muted'));
+ log.appendChild(el('p','Water '+state.water+' Workouts '+state.workouts+' Meals '+state.meals+' Study '+state.study,'muted'));
  if(state.goal){log.appendChild(el('p','Current focus: '+state.goal,'muted'));}
  main.appendChild(log);
 }
@@ -162,14 +162,14 @@ function setRoute(name){
  else{state.route='dashboard';}
  var links=document.getElementById('sidebar');
  if(links){
-  var child=links.firstChild;
-  while(child){
-   if(child.hasAttribute&&child.hasAttribute('data-route')){
-    if(child.getAttribute('data-route')===state.route){child.setAttribute('class','active');}
-    else{child.setAttribute('class','');}
-   }
-   child=child.nextSibling;
-  }
+ var child=links.firstChild;
+ while(child){
+ if(child.hasAttribute&&child.hasAttribute('data-route')){
+ if(child.getAttribute('data-route')===state.route){child.setAttribute('class','active');}
+ else{child.setAttribute('class','');}
+ }
+ child=child.nextSibling;
+ }
  }
  if(state.route==='dashboard'){dashboard();}
  else{page(state.route);}
@@ -245,31 +245,31 @@ function importState(){
  input.setAttribute('type','file');
  input.setAttribute('accept','application/json');
  input.addEventListener('change',function(){
-  var file=input.files.item(0);
-  if(!file){return;}
-  var reader=new FileReader();
-  reader.addEventListener('load',function(){
-   try{
-    var data=JSON.parse(reader.result);
-    if(data.name!==undefined){state.name=data.name;}
-    if(data.goal!==undefined){state.goal=data.goal;}
-    if(data.route!==undefined){state.route=data.route;}
-    if(data.xp!==undefined){state.xp=data.xp;}
-    if(data.level!==undefined){state.level=data.level;}
-    if(data.streak!==undefined){state.streak=data.streak;}
-    if(data.water!==undefined){state.water=data.water;}
-    if(data.workouts!==undefined){state.workouts=data.workouts;}
-    if(data.meals!==undefined){state.meals=data.meals;}
-    if(data.study!==undefined){state.study=data.study;}
-    if(data.weight!==undefined){state.weight=data.weight;}
-    if(data.mood!==undefined){state.mood=data.mood;}
-    if(data.habit!==undefined){state.habit=data.habit;}
-    save();
-    render();
-    toast('Backup imported');
-   }catch(error){toast('Import failed');}
-  });
-  reader.readAsText(file);
+ var file=input.files.item(0);
+ if(!file){return;}
+ var reader=new FileReader();
+ reader.addEventListener('load',function(){
+ try{
+ var data=JSON.parse(reader.result);
+ if(data.name!==undefined){state.name=data.name;}
+ if(data.goal!==undefined){state.goal=data.goal;}
+ if(data.route!==undefined){state.route=data.route;}
+ if(data.xp!==undefined){state.xp=data.xp;}
+ if(data.level!==undefined){state.level=data.level;}
+ if(data.streak!==undefined){state.streak=data.streak;}
+ if(data.water!==undefined){state.water=data.water;}
+ if(data.workouts!==undefined){state.workouts=data.workouts;}
+ if(data.meals!==undefined){state.meals=data.meals;}
+ if(data.study!==undefined){state.study=data.study;}
+ if(data.weight!==undefined){state.weight=data.weight;}
+ if(data.mood!==undefined){state.mood=data.mood;}
+ if(data.habit!==undefined){state.habit=data.habit;}
+ save();
+ render();
+ toast('Backup imported');
+ }catch(error){toast('Import failed');}
+ });
+ reader.readAsText(file);
  });
  input.click();
 }
@@ -282,9 +282,9 @@ function resetState(){
 function findTarget(node){
  var current=node;
  while(current&&current!==document.body){
-  if(current.hasAttribute&&current.hasAttribute('data-action')){return current;}
-  if(current.hasAttribute&&current.hasAttribute('data-route')){return current;}
-  current=current.parentNode;
+ if(current.hasAttribute&&current.hasAttribute('data-action')){return current;}
+ if(current.hasAttribute&&current.hasAttribute('data-route')){return current;}
+ current=current.parentNode;
  }
  return null;
 }
@@ -321,6 +321,7 @@ function registerAction(name,handler){
  else if(name==='export'){actions.export=handler;}
  else if(name==='importState'){actions.importState=handler;}
  else if(name==='reset'){actions.reset=handler;}
+ else if(name==='finish-onboarding'){actions.finishOnboarding=handler;}
 }
 function render(){
  if(!state.name){showOnboarding();return;}
@@ -347,6 +348,7 @@ function start(){
  registerAction('export',exportState);
  registerAction('importState',importState);
  registerAction('reset',resetState);
+ registerAction('finish-onboarding',function(){action('finish-onboarding');});
  load();
  document.addEventListener('click',delegate);
  render();
